@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<link href='http://fonts.googleapis.com/css?family=Roboto+Slab:400,700' rel='stylesheet' type='text/css'>
+	<title>LuaFix 2</title>
+	<script src="extend.js"></script>
+	<script src="luaparse.js"></script>
+	<script src="show.js"></script>
+	<script src="lphelp.js"></script>
+	<script src="antipatterns.js"></script>
+	<script src="magic.js"></script>
+	<script src="newclobber.js"></script>
+	<script src="redundant.js"></script>
+	<script src="uses.js"></script>
+	<link rel="stylesheet" href="luafix.css">
+<style id="showhide">
+
+</style>
+</head>
+<body>
+	<h1>LuaFix2</h1>
+	<p>What your <strong>Lua 5.1</strong> code critiqued? Paste it into the box, make sure the right settings have checkmarks, and press the button.</p>
+	<hr>
+	<textarea id="source">
+		a = 1
+if false then
+a = 2
+end
+print(a)
+--[[
+a,b = 0, 1
+for i = 1, 10 do
+a, b = b, a + b + i
+end
+print(a)
+
+function add(a, b)
+	return a + b;
+end
+
+function same(x, y)
+	return x == y;
+end
+
+local z=add(1,2);
+
+local y = 3;
+x, z = add(5, y), 9;
+
+local y = 9;
+
+print(not same(x, 9));
+
+if workspace:FindFirstChild("Cat") ~= nil then
+	print(cat);
+end]]</textarea><br>
+	<button id="checkbutton">Luafix this</button>
+	<input type="checkbox" name="implementationShow" checked id="implementationShow"><label for="implementationShow">Show "Unimplemented" Warnings</label>
+	<input type="checkbox" name="useRoblox" checked id="useRoblox"><label for="useRoblox">This is ROBLOX code</label>
+<div id="post" class=post></div>
+<div id="hoverables"></div>
+<script src="hoverables.js"></script>
+	<div id="report">
+	</div>
+	<h2>Suggested Automatic Improvements</h2>
+	<div id="suggested" class=post></div>
+<script>
+var USE_ROBLOX = true;
+var COMPLAIN_BOOLEAN_COMPARE = false;
+// Complain about A ~= false or A == nil always, regardless of context.
+// (Otherwise, only complains inside conditions)
+document.getElementById("implementationShow").onchange = function() {
+	var e = document.getElementById("implementationShow").checked;
+	if (!e) {
+		showhide.innerHTML = ".implementation {display:none;}";
+	} else {
+		showhide.innerHTML = "";
+	}
+}
+
+document.getElementById("useRoblox").onchange = function() {
+	USE_ROBLOX = document.getElementById("useRoblox").checked;
+}
+</script>
+<script src="luafix2.js"></script>

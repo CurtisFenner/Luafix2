@@ -1,0 +1,96 @@
+	body {
+		font-family: "Segoe UI";
+		margin: 0.5in;
+	}
+	#report {
+		background:#FAFAFA;
+	}
+	.post {
+		white-space: pre;
+		font-family: monospace;
+		font-size: 14px;
+		line-height: 200%;
+		border-left: #DDD 5px solid;
+		padding-left: 2em;
+		background: #FAFAFA;
+	}
+	.post .key {/* keywords */
+		font-weight: bold;
+	}
+	.post .logical { /* and, or, not */
+		font-weight: bold;
+		color: #F05;
+	}
+	.post .keyliteral { /* nil, false, true */
+		font-weight: bold;
+		color: #50F;
+	}
+	.post .number {
+		font-weight: bold;
+		color: #E90;
+	}
+	.post .string {
+		color: #6782D3;
+	}
+
+	.pyellow, .pred, .pblue {
+		display: inline-block;
+	}
+	.post .pyellow {
+		border-bottom: 3px solid #FFBA54;
+		background: #FDA;
+	}
+
+	.post .pred {
+		border-bottom: 3px solid #FF5454;
+		background: #FAA;
+	}
+
+	#report > div {
+		margin: 0.25em;
+		padding: 0.5em;
+		position: relative;
+	}
+	.info {
+		background: #EEF;
+	}
+	.warning {
+		background: #FDA;
+	}
+	.error {
+		background: #FAA;
+	}
+	.implementation {
+		background: #F7B;
+		box-shadow: inset 0 0 5px 5px #BB5599;
+	}
+	.quantity {
+		float: left;
+		width: 2em;
+		text-align: center;
+		margin: 0;
+		padding: 0;
+		top: 0;
+		color: transparent;
+		font-weight: bold;
+		border-right: 1px solid black;
+		margin-right: 1em;
+		padding-right: 0.5em;
+	}
+	.quantity::before {
+		content: "×"
+	}
+	code {
+		border: 1px solid rgba(0, 0, 0, 0.5);
+		background: rgba(255, 255, 255, 0.5);
+		padding: 0.5em;
+	}
+
+	hr {
+		border: none;
+		background: transparent;
+		height: 0;
+		border-bottom: 1px dotted black;
+		margin-top: 3em;
+		margin-bottom: 3em;
+	}

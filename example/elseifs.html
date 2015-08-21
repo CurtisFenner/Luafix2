@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>LuaFix 2</title>
+	<link rel="stylesheet" href="css.css">
+</head>
+<body>
+	<h1>LuaFix2 - Example - <code>elseif</code>s</h1>
+	<p><a href="../luafix2.html">Go back to Luafix2</a>
+	</p>
+	<hr>
+<p>Consider the following code:
+<div class=post>
+local n = math.random()
+if n > .25 and n &lt; .5 then
+	print(n - .25)
+	print("in middle")
+elseif n >= .5 and n &lt; .75 then
+	print(n + .25)
+	print("in middle")
+end
+</div>
+<p>The <code>print("in middle")</code> is the same in two places; if I wanted to
+change it, I would have to change it in several places. If I was replacing it
+with a loop, then I would have a loop twice.
+<p>This means we should pull this code to after the <code>if</code> so that the
+same one is used by both. A simple <code>if</code> has to be added to make it
+<em>only</em> happen when one of the previous branches happened. It is easy to
+do this in this case:
+<div class=post>
+local n = math.random()
+if n > .25 and n &lt; .5 then
+	print(n - .25)
+elseif n >= .5 and n &lt; .75 then
+	print(n + .25)
+end
+if n > .25 and n &lt; .75 then
+	print("in middle")
+end
+</div>
+
+
+<hr>
+
+<p>Let's say we're making a simple game and there are several materials: Stone,
+Grass, Glass, and Dirt &mdash; there are no other materials. Thus the following
+does not require an <code>else</code> clause.
+
+<div class=post>
+if material == "Stone" then
+	getStone();
+	wait(1)
+	print("You got Stone")
+elseif material == "Grass" then
+	getGrass();
+	wait(1)
+	print("You got Grass")
+elseif material == "Glass" then
+	getGlass();
+	wait(1)
+	print("You got Glass")
+elseif material == "Dirt" then
+	getDirt();
+	wait(1)
+	print("You got Dirt")
+end
+</div>
+
+<p>In this case, we know we are <em>always</em> going to get that message printed.
+The last statement is a little different each time. Let's change it a little.
+<p> The following does the same thing:
+
+<div class=post>
+if material == "Stone" then
+	getStone()
+	wait(1)
+	print("You got " .. material) -- Stone
+elseif material == "Grass" then
+	getGrass()
+	wait(1)
+	print("You got " .. material) -- Grass
+elseif material == "Glass" then
+	getGlass()
+	wait(1)
+	print("You got " .. material) -- Glass
+elseif material == "Dirt" then
+	getDirt()
+	wait(1)
+	print("You got " .. material) -- Dirt
+end
+</div>
+
+<p>Now each line ends with the same thing. We know that at least <em>one</em>
+	will happen, so we can just move the
+	<code>print("You got " .. material)</code> after the <code>if</code>:
+<div class=post>
+if material == "Stone" then
+	getStone()
+elseif material == "Grass" then
+	getGrass()
+elseif material == "Glass" then
+	getGlass()
+elseif material == "Dirt" then
+	getDirt()
+end
+
+wait(1)
+print("You got " .. material) -- Whatever
+</div>
+
+You could probably take this further and reduce the likely reuse between the
+<code>getStone()</code>, <code>getGrass()</code>, etc.
