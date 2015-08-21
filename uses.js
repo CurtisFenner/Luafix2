@@ -58,14 +58,31 @@ function usesStage(parse) {
 			}
 		}
 		if (global) {
+			val.level = 0;
 			dic[0][key] = val;
 		} else {
+			val.level = dic.length - 1;
 			dic[dic.length - 1][key] = val;
 		}
 	}
+
+	var functions = []; // trees for current function
+
 	function get(dic, key) {
 		for (var i = dic.length - 1; i >= 0; i--) {
 			if (dic[i][key] != undefined) {
+				var fn = functions.peek();
+				if (fn && i < fn.level) {
+					if (typeof fn.highest === typeof 1) {
+						if (fn.highest < i) {
+							fn.highest = i;
+							fn.highestVariable = key;
+						}
+					} else {
+						fn.highest = i;
+						fn.highestVariable = key;
+					}
+				}
 				return dic[i][key];
 			}
 		}
@@ -102,21 +119,6 @@ function usesStage(parse) {
 			n[i] = o;
 		}
 		return n;
-	}
-
-	function functionContext(tree) {
-		if (!tree.parent) {
-			return tree;
-		} else if (tree.type == "FunctionDeclaration") {
-			return tree;
-		} else {
-			if (tree.property == "identifier") {
-				// Variables used in definition of function aren't part of
-				// the function's scope.
-				return functionContext(tree.parent.parent);
-			}
-			return functionContext(tree.parent);
-		}
 	}
 
 	// Check any piece of the parse.
@@ -188,9 +190,12 @@ function usesStage(parse) {
 			vs.push({});
 			vs = search(tree.body, vs);
 			vs = search(tree.condition, vs);
+			vs.pop();
 			var once = copyVs(vs);
+			vs.push({});
 			vs = search(tree.body, vs);
 			vs = search(tree.condition, vs);
+			vs.pop();
 			return merge(once, vs);
 		} else if (tree.type === "ForNumericStatement") {
 			vs = search(tree.start, vs);
@@ -254,6 +259,9 @@ function usesStage(parse) {
 			}
 			return vs;
 		} else if (tree.type === "FunctionDeclaration") {
+			functions.push(tree);
+			tree.level = vs.length;
+			vs.push({});
 			if (tree.identifier) {
 				if (tree.identifier.type === "Identifier") {
 					set(vs, tree.identifier.name, [tree.identifier], !tree.isLocal);
@@ -262,12 +270,35 @@ function usesStage(parse) {
 					return vs;
 				}
 			}
-			vs.push({});
 			for (var i = 0; i < tree.parameters.length; i++) {
 				set(vs, tree.parameters[i].name || "...", [tree.parameters[i]]);
 			}
+			tree.highest = -1;
 			vs = search(tree.body, vs);
 			vs.pop();
+			functions.pop();
+			if (tree.highest < vs.length - 1) {
+				var pure = "is pure, and can be a global variable.";
+				if (tree.highest >= 0) {
+					pure = "needs <code>" + tree.highestVariable + "</code>, but no variable in a higher scope.";
+				}
+				if (tree.identifier) {
+					error("This function can be defined in a lower scope", "Don't unnecessarily nest functions. This function " + pure, tree);
+				} else {
+					// Only complain if it's nested inside of a FUNCTION: TODO
+					var complain = false;
+					var p = tree.parent;
+					while (p) {
+						if (p.type === "FunctionDeclaration") {
+							complain = true;
+						}
+						p = p.parent;
+					}
+					if (complain) {
+						warn("This function can be defined in a lower scope", "Don't unnecessarily nest functions. This function " + pure, tree);
+					}
+				}
+			}
 			return vs;
 		} else if (tree.type === "ReturnStatement") {
 			return search(tree.arguments, vs);
@@ -279,6 +310,11 @@ function usesStage(parse) {
 			return vs;
 		} else if (tree.type === "UnaryExpression") {
 			return search(tree.argument, vs);
+		} else if (tree.type === "DoStatement") {
+			vs.push({})
+			search(tree.body, vs);
+			vs.pop();
+			return vs;
 		} else if (tree.type === "IfStatement") {
 			// Merge the result of all clauses, and before if there is no else.
 			var lastClause = tree.clauses.peek();
