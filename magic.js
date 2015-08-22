@@ -23,11 +23,13 @@ function magicFinder(tree, sofar) {
 					saves = " <strong>This also saves around " + savings +
 						" characters!</strong>";
 				}
-				warn("Use of magic value <code>" + care + "</code> more than once.",
-					"Consider defining a variable <code>CONSTANT = " + care
-					+ "</code> and using it instead, in case the value changes, and to explain where the value comes from."
-					+ saves,
-					tree);
+				if (saves) {
+					warn("Use of magic value <code>" + care + "</code> more than once.",
+						"Consider defining a variable <code>CONSTANT = " + care
+						+ "</code> and using it instead, in case the value changes, and to explain where the value comes from."
+						+ saves,
+						tree);
+				}
 			}
 		}
 	}

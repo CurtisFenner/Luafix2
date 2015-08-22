@@ -287,7 +287,7 @@ function badRepeat(tree) {
 			if (then.body[0].type === "RepeatStatement") {
 				warn("Consider using a <code>while</code> instead [DRY]",
 					"Instead of using <code>if a then repeat until not a</code>, just use <code>while a do end</code>",
-					then.condition);
+					then);
 			}
 		}
 	}
