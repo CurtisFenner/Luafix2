@@ -1,3 +1,5 @@
+// TODO: complain about statements which do not depend on iteration.
+
 // Track the location of any variable.
 function usesStage(parse) {
 	var sources = [];
@@ -277,13 +279,13 @@ function usesStage(parse) {
 			vs = search(tree.body, vs);
 			vs.pop();
 			functions.pop();
-			if (tree.highest < vs.length - 1) {
+			if (tree.highest < vs.length - 1 && vs.length > 2) {
 				var pure = "is pure, and can be a global variable.";
 				if (tree.highest >= 0) {
 					pure = "needs <code>" + tree.highestVariable + "</code>, but no variable in a higher scope.";
 				}
 				if (tree.identifier) {
-					error("This function can be defined in a lower scope", "Don't unnecessarily nest functions. This function " + pure, tree);
+					error("This function can be defined in an outer scope", "Don't unnecessarily nest functions. This function " + pure, tree);
 				} else {
 					// Only complain if it's nested inside of a FUNCTION: TODO
 					var complain = false;
@@ -295,7 +297,7 @@ function usesStage(parse) {
 						p = p.parent;
 					}
 					if (complain) {
-						warn("This function can be defined in a lower scope", "Don't unnecessarily nest functions. This function " + pure, tree);
+						warn("This function can be defined in an outer scope", "Don't unnecessarily nest functions. This function " + pure, tree);
 					}
 				}
 			}
@@ -390,13 +392,17 @@ function usesStage(parse) {
 		var writes = sources[i].writes.length;
 		if (reads == 0 && sources[i].name != "_") {
 			if (writes == 0) {
-				error("This assignment to <code>" + sources[i].name + "</code> is not used", "", sources[i]);
+				var f = error;
+				if (sources[i].property === /* FunctionDeclaration */"parameters" || sources[i].property ===  /*ForNumericStatement*/ "variable") {
+					f = warn;
+				}
+				f("This assignment to <code>" + sources[i].name + "</code> is not used", "", sources[i]);
 			} else {
 				var addendum = "";
 				if (USE_ROBLOX) {
 					addendum = "If this is an object and you set the <code>.Parent</code>, everything is fine!";
 				}
-				warn("This assignment to <code>" + sources[i].name + "</code> is only written to", "Did you forget to use it fully?" + addendum, sources[i]);
+				// warn("This assignment to <code>" + sources[i].name + "</code> is only written to", "Did you forget to use it fully?" + addendum, sources[i]);
 			}
 		}
 		if (reads > 0 && sources[i].name.replace(/_/g,"").length === 0) {
