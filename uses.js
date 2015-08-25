@@ -1,6 +1,17 @@
 // TODO: complain about statements which do not depend on iteration.
 
 // Track the location of any variable.
+
+function showStack(x) {
+	for (var i = 0; i < x.length; i++) {
+		var s = i + ":\t";
+		for (var name in x[i]) {
+			s += name + ", ";
+		}
+		console.log(s);
+	}
+}
+
 function usesStage(parse) {
 	var sources = [];
 	// Returns a ++ b with duplicates between a and b removed.
@@ -51,8 +62,8 @@ function usesStage(parse) {
 			}
 		}
 		for (var i = dic.length - 1; i >= 0; i--) {
-			if (dic[i][key] !== undefined) {
-				if (dic[i][key].locked) {
+			if (dic[i][key] !== undefined || global === false) {
+				if (dic[i][key] && dick[i][key].locked) {
 					error(dic[i][key].locked[0], dic[i][key].locked[1], val[0]); // TODO: check me
 				}
 				dic[i][key] = val;
@@ -126,6 +137,8 @@ function usesStage(parse) {
 	// Check any piece of the parse.
 	// homes: Dictionary[variable name] -> [tree]
 	function search(tree, vs) {
+		console.log(tree.type + ":" + tree.id);
+		showStack(vs);
 		assert(vs, "search must be given vs");
 		// Make copy of vs:
 		vs = copyVs(vs);
@@ -172,7 +185,7 @@ function usesStage(parse) {
 				var variable = tree.variables[i];
 				var a = [variable];
 				a.locked = ["Don't change <code>for</code> variables", "The result can be very unpredictable."];
-				set(vs, variable.name, a);
+				set(vs, variable.name, a, false);
 			}
 			vs = search(tree.body, vs);
 			vs.pop();
@@ -182,7 +195,7 @@ function usesStage(parse) {
 				var variable = tree.variables[i];
 				var a = [variable];
 				a.locked = ["Don't change <code>for</code> variables", "The result can be very unpredictable."];
-				set(vs, variable.name, a);
+				set(vs, variable.name, a, false);
 			}
 			vs = search(tree.body, vs);
 			vs.pop();
@@ -210,14 +223,14 @@ function usesStage(parse) {
 			var a = [tree.variable];
 			a.locked = ["Do not change <code>for</code> control variables.",
 				"PIL4.3.4: You should never change the value of the control variable: The effect of such changes is unpredictable."]
-			set(vs, tree.variable.name, a);
+			set(vs, tree.variable.name, a, false);
 			vs = search(tree.body, vs);
 			vs.pop();
 			vs.push({});
 			var a = [tree.variable];
 			a.locked = ["Do not change <code>for</code> control variables.",
 				"PIL4.3.4: You should never change the value of the control variable: The effect of such changes is unpredictable."]
-			set(vs, tree.variable.name, a);
+			set(vs, tree.variable.name, a, false);
 			vs = search(tree.body, vs);
 			vs.pop();
 			var willExecute = false;
@@ -284,6 +297,7 @@ function usesStage(parse) {
 				if (tree.highest >= 0) {
 					pure = "needs <code>" + tree.highestVariable + "</code>, but no variable in a higher scope.";
 				}
+				console.log("@@@ Stack this tall:", vs.length, "Get from:", tree.highest);
 				if (tree.identifier) {
 					error("This function can be defined in an outer scope", "Don't unnecessarily nest functions. This function " + pure, tree);
 				} else {
