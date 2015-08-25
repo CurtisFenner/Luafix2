@@ -14,6 +14,13 @@ function antipatternStage(parse) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// TODO: Complain about successive `if`s having the same condition, or `and` the same condition.
+// if (a & b) {
+// }
+// if (c & b) {
+// }
+
+
 function isUnderscores(n) {
 	return n.replace(/_/g, "").length === 0 && n.length > 0;
 }
