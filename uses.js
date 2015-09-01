@@ -63,7 +63,7 @@ function usesStage(parse) {
 		}
 		for (var i = dic.length - 1; i >= 0; i--) {
 			if (dic[i][key] !== undefined || global === false) {
-				if (dic[i][key] && dick[i][key].locked) {
+				if (dic[i][key] && dic[i][key].locked) {
 					error(dic[i][key].locked[0], dic[i][key].locked[1], val[0]); // TODO: check me
 				}
 				dic[i][key] = val;
