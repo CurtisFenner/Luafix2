@@ -142,9 +142,9 @@ function showTree(tree, pp) {
 	} else if (tree.type === "ElseClause") {
 		return sKey("else") + body(tree.body);
 	} else if (tree.type === "MemberExpression") {
-		return show(tree.base) + tree.indexer + show(tree.identifier);
+		return show(tree.base, -1/0) + tree.indexer + show(tree.identifier);
 	} else if (tree.type === "IndexExpression") {
-		return show(tree.base) + "[" + show(tree.index) + "]";
+		return show(tree.base, -1/0) + "[" + show(tree.index) + "]";
 	} else if (tree.type === "TableConstructorExpression") {
 		if (tree.fields.length) {
 			var s = tab( showTree(tree.fields).join(",\n") );
