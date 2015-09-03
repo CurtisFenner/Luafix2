@@ -230,7 +230,5 @@ function setupClobber(tree) {
 
 function clobberStage(tree) {
 	var stack = [];
-	info("BEGINNING OF CLOBBER");
 	setupClobber(tree, stack);
-	info("END OF CLOBBER");
 }
