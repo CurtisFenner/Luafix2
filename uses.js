@@ -276,7 +276,6 @@ function usesStage(parse) {
 		} else if (tree.type === "FunctionDeclaration") {
 			functions.push(tree);
 			tree.level = vs.length;
-			vs.push({});
 			if (tree.identifier) {
 				if (tree.identifier.type === "Identifier") {
 					set(vs, tree.identifier.name, [tree.identifier], !tree.isLocal);
@@ -285,6 +284,7 @@ function usesStage(parse) {
 					return vs;
 				}
 			}
+			vs.push({});
 			for (var i = 0; i < tree.parameters.length; i++) {
 				set(vs, tree.parameters[i].name || "...", [tree.parameters[i]]);
 			}
