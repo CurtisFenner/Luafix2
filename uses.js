@@ -137,8 +137,6 @@ function usesStage(parse) {
 	// Check any piece of the parse.
 	// homes: Dictionary[variable name] -> [tree]
 	function search(tree, vs) {
-		console.log(tree.type + ":" + tree.id);
-		showStack(vs);
 		assert(vs, "search must be given vs");
 		// Make copy of vs:
 		vs = copyVs(vs);
