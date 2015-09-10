@@ -139,6 +139,7 @@ function luafix2() {
 	antipatternStage(parse, source);
 	usesStage(parse);
 	magicStage(parse, source);
+	nameStage(parse);
 	info("LuaFix finished.", "<strong>" + errorCount +
 		"</strong> errors and <strong>" +
 		warnCount + "</strong> warnings.", false);
