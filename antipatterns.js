@@ -100,6 +100,11 @@ function badAssignment(tree) {
 }
 
 function badLoop(tree) {
+	if (tree.type === "ForNumericStatement" || tree.type === "ForGenericStatement") {
+		if (tree.body.length === 0) {
+			error("Empty loop", "This loop will not do anything.", tree);
+		}
+	}
 	if (tree.type === "RepeatStatement" || tree.type === "WhileStatement") {
 		if (tree.body.length === 0) {
 			if ((isFalsey(tree.condition) && tree.type === "RepeatStatement") || (isTruthy(tree.condition) && tree.type === "WhileStatement")) {
