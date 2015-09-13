@@ -1,14 +1,19 @@
 // TODO: complain about statements which do not depend on iteration.
 
 // Track the location of any variable.
-
+"use strict";
 function showStack(x) {
+	console.log("stack:");
 	for (var i = 0; i < x.length; i++) {
 		var s = i + ":\t";
 		for (var name in x[i]) {
-			s += name + ", ";
+			s += name;
+			if (x[i][name].locked) {
+				s += "[!]";
+			}
+			s += ", ";
 		}
-		console.log(s);
+		console.log("\t" + s);
 	}
 }
 
@@ -29,6 +34,7 @@ function usesStage(parse) {
 				o.push(b[i]);
 			}
 		}
+		o.locked = a.locked || b.locked;
 		return o;
 	}
 
