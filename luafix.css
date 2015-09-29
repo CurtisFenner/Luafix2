@@ -7,8 +7,8 @@ body {
 }
 .post {
 	white-space: pre;
-	font-family: monospace;
-	font-size: 12px;
+	font-family: 'ubuntu mono', monospace;
+	font-size: 14px;
 	line-height: 200%;
 }
 .post .key {/* keywords */
