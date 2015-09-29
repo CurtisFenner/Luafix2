@@ -75,7 +75,7 @@ function showTree(tree, pp) {
 			var s = show(tree.left, p) + " " + o + " " + show(tree.right, p);
 		} else {
 			if (tree.operator == "not") {
-				var s = tree.operator + " " + show(tree.argument, p);
+				var s = sKeyLogical(tree.operator) + " " + show(tree.argument, p);
 			} else {
 				var s = tree.operator + show(tree.argument, p);
 			}
