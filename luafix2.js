@@ -131,9 +131,8 @@ function luafix2() {
 		error(e);
 		return;
 	}
-	// Descend through parse 
+	// Descend through parse
 	styleStage(parse, source);
-	// variableStage(parse, source);
 	clobberStage(parse);
 	codeReuseStage(parse, source);
 	antipatternStage(parse, source);
