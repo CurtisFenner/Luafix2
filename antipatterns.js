@@ -305,15 +305,18 @@ function badRepeat(tree) {
 	}
 }
 
-function checkBadCondition(tree) {
+function checkBadCondition(tree, complainRight) {
 	// Always true or always false conditions are bad.
 	if (tree.type == "LogicalExpression") {
+		if (show(tree.left) == show(tree.right)) {
+			error("Logical operator is unnecessary", "The left and right expressions are the same", tree);
+		}
 		if (tree.operator == "and") {
 			if (isFalsey(tree.left)) {
 				error("Condition is always <code>false</code>",
 					"The left expression <code>" + show(tree.left) + "</code> is always falsy.", tree);
 			}
-			if (isFalsey(tree.right)) {
+			if (isFalsey(tree.right) && complainRight) {
 				error("Condition is always <code>false</code>",
 					"The right expression <code>" + show(tree.right) + "</code> is always falsy", tree);
 			}
@@ -321,7 +324,7 @@ function checkBadCondition(tree) {
 				error("Right side of <code>and</code> is redundant",
 					"The left side <code>" + show(tree.left) + "</code> is always truthy", tree);
 			}
-			if (isTruthy(tree.right)) {
+			if (isTruthy(tree.right) && complainRight) {
 				error("Left side of <code>and</code> is redundant",
 					"The right side <code>" + show(tree.right) + "</code> is always truthy", tree);
 			}
@@ -330,16 +333,16 @@ function checkBadCondition(tree) {
 				error("Condition is always <code>true</code>",
 					"The left expression <code>" + show(tree.left) + "</code> is always truthy.", tree);
 			}
-			if (isTruthy(tree.right)) {
+			if (isTruthy(tree.right) && complainRight) {
 				error("Condition is always <code>true</code>",
 					"The right expression <code>" + show(tree.right) + "</code> is always truthy", tree);
 			}
 			if (isFalsey(tree.left)) {
-				error("Right side of <code>or</code> is redundant",
+				error("Left side of <code>or</code> is redundant",
 					"The left side <code>" + show(tree.left) + "</code> is always falsey", tree);
 			}
-			if (isFalsey(tree.right)) {
-				error("Left side of <code>or</code> is redundant",
+			if (isFalsey(tree.right) && complainRight) {
+				error("Right side of <code>or</code> is redundant",
 					"The right side <code>" + show(tree.right) + "</code> is always falsey", tree);
 			}
 		}
@@ -348,7 +351,9 @@ function checkBadCondition(tree) {
 
 function searchBadCondition(tree) {
 	if (tree["condition"]) {
-		checkBadCondition(tree.condition);
+		checkBadCondition(tree.condition, true);
+	} else {
+		checkBadCondition(tree, false);
 	}
 }
 
@@ -426,7 +431,7 @@ function antiFFCDot(tree) {
 				tree.base = temp;
 				error("You index a result of <code>:FindFirstChild</code>",
 					"Your code uses <code>" + show( tree ) + "</code>. Using "
-					+ "<code>.</code> or <code>:</code> on the result of " 
+					+ "<code>.</code> or <code>:</code> on the result of "
 					+ "<code>:FindFirstChild</code> will result in an error if "
 					+ "it returns <code>nil</code>. You should either do proper "
 					+ "handling of <code>nil</code> or simply use <code>" + soln
