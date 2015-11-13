@@ -64,6 +64,12 @@ function newVariable(name) {
 }
 
 // (stack, String, boolean, AST) -> variable
+// name: the name of the variable
+// nopush:
+//    true: Do not add if not found
+//    false: Push on a new local variable
+// iden:
+//    The Identifier parse tree object corresponding to this definition
 function stackFind(stack, name, nopush, iden) {
 	assert(stack.length >= 2, "stack has separate globals");
 	for (var i = stack.length - 1; i >= 0; i--) {
@@ -77,7 +83,8 @@ function stackFind(stack, name, nopush, iden) {
 	if (!nopush) {
 		var variable = newVariable(name);
 		stack[1].push(variable);
-		if (stack.length > 3+1 && nopush === 0) {
+		if (stack.length > 3 && nopush === 0) {
+			console.log(name, stack.length);
 			// TODO: Ensure there is actually a FUNCTION on the stack
 			// (warn for other controls)
 			// built in globals : globals : top locals : this function
@@ -89,6 +96,9 @@ function stackFind(stack, name, nopush, iden) {
 	}
 }
 
+// Puts a new variable on `stack` with name `name`
+// def: A parse tree object
+// up: How many levels "up" from the most local scope to define the variable in (default 0)
 function stackLocal(stack, name, def, up) {
 	var shadowed = stackFind(stack, name, true);
 	if (shadowed) {
@@ -97,7 +107,6 @@ function stackLocal(stack, name, def, up) {
 	}
 	var v = newVariable(name);
 	v.definition = def;
-	// TODO: warn about shadowing
 	up = up || 0;
 	stack[stack.length - 1 - up].push(v);
 	return v;
@@ -162,6 +171,7 @@ function checkScope(scope) {
 }
 
 function closeBlock(tree, stack) {
+	console.log(stack.length, "stack");
 	checkScope(stack.pop());
 }
 function matchIdentifier(tree, stack) {
@@ -183,9 +193,11 @@ function matchIdentifier(tree, stack) {
 	} else if (tree.type === "FunctionDeclaration") {
 		var iden = tree.identifier;
 		if (iden && iden.type === "Identifier") {
+			var end = stack.pop();
 			var variable = tree.isLocal
-				? stackLocal(stack, iden.name, iden, 1)
+				? stackLocal(stack, iden.name, iden)
 				: stackFind(stack, iden.name, 0, iden);
+			stack.push(end);
 			variable.assignments.push(tree.identifier);
 		} else {
 			// Anonymous function or member expression
