@@ -35,7 +35,7 @@ function processIdentifier(iden) {
 	var context = getContext(iden);
 	var good = nameCheck[context](iden.name);
 	if (!good) {
-		warn("Variable name <code>" + iden.name + "</code> doesn't match style", "", iden);
+		//warn("Variable name <code>" + iden.name + "</code> doesn't match style", "", iden);
 	}
 }
 
