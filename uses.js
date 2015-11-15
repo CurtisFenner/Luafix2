@@ -119,7 +119,7 @@ function usesStage(parse) {
 				if (kill) {
 					// TODO: make this more nuanced.
 					// I *should* (but currently don't) keep assignnments to method calls, e.g
-					// blah:thing().property = 
+					// blah:thing().property =
 					// that should stay as a "read", even with "kill" on.
 					ans[i].reads.pop();
 				}
@@ -314,6 +314,7 @@ function usesStage(parse) {
 						}
 						p = p.parent;
 					}
+					// TODO: don't complain if there are only `if` blocks in between
 					if (complain) {
 						warn("This function can be defined in an outer scope", "Don't unnecessarily nest functions. This function " + pure, tree);
 					}
