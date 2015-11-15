@@ -10,15 +10,60 @@ function antipatternStage(parse) {
 	lprecurse(parse, badAssignment);
 	lprecurse(parse, badIndex);
 	lprecurse(parse, endingUnderscore);
+	lprecurse(parse, successiveIfComplaints);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO: Complain about successive `if`s having the same condition, or `and` the same condition.
-// if (a & b) {
-// }
-// if (c & b) {
-// }
+function booleanClauses(e) {
+	if (e.type === "LogicalExpression" && e.Operator == "and") {
+		return booleanClauses(e.left).concat(booleanClauses(e.right));
+	} else {
+		return [show(e)];
+	}
+}
+
+function intersect(a, b) {
+	var c = [];
+	for (var i = 0; i < a.length; i++) {
+		if (b.indexOf(a[i]) >= 0) {
+			c.push(a[i]);
+		}
+	}
+	return c;
+}
+
+function successiveIfs(a, b) {
+	var ca = booleanClauses(a.clauses[0].condition);
+	for (var i = 1; i < a.clauses.length; i++) {
+		if (a.clauses[i].condition) {
+			ca = intersect(ca, booleanClauses(a.clauses[i].condition));
+		}
+	}
+	var cb = booleanClauses(b.clauses[0].condition);
+	for (var i = 1; i < b.clauses.length; i++) {
+		if (b.clauses[i].condition) {
+			cb = intersect(cb, booleanClauses(b.clauses[i].condition));
+		}
+	}
+	//
+	var u = intersect(ca, cb);
+	if (u.length != 0) {
+		warn("Conditions repeated in consecutive <code>if</code>s",
+			"Instead of repeating <code>" + u[0] + "</code>, consider grouping these under a larger <code>if " + u[0] + " then</code> statement.",
+			b.clauses[0].condition);
+	}
+}
+
+function successiveIfComplaints(t) {
+	if (t.body) {
+		for (var i = 0; i < t.body.length - 1; i++) {
+			if (t.body[i].type === "IfStatement" && t.body[i+1].type === "IfStatement") {
+				successiveIfs(t.body[i], t.body[i+1]);
+			}
+		}
+	}
+}
 
 
 function isUnderscores(n) {

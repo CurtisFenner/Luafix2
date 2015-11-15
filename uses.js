@@ -421,6 +421,7 @@ function usesStage(parse) {
 				if (USE_ROBLOX) {
 					addendum = "If this is an object and you set the <code>.Parent</code>, everything is fine!";
 				}
+				// TODO: If all functions to create this are pure and it's not a parameter, then warn
 				// warn("This assignment to <code>" + sources[i].name + "</code> is only written to", "Did you forget to use it fully?" + addendum, sources[i]);
 			}
 		}
