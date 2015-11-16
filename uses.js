@@ -35,6 +35,7 @@ function usesStage(parse) {
 			}
 		}
 		o.locked = a.locked || b.locked;
+		o.definition = a.definition || b.definition;
 		return o;
 	}
 
@@ -189,6 +190,7 @@ function usesStage(parse) {
 				var variable = tree.variables[i];
 				var a = [variable];
 				a.locked = ["Don't change <code>for</code> variables", "The result can be very unpredictable."];
+				a.definition = tree;
 				set(vs, variable.name, a, false);
 			}
 			vs = search(tree.body, vs);
@@ -199,6 +201,7 @@ function usesStage(parse) {
 				var variable = tree.variables[i];
 				var a = [variable];
 				a.locked = ["Don't change <code>for</code> variables", "The result can be very unpredictable."];
+				a.definition = tree;
 				set(vs, variable.name, a, false);
 			}
 			vs = search(tree.body, vs);
@@ -305,7 +308,6 @@ function usesStage(parse) {
 				if (tree.identifier) {
 					error("This function can be defined in an outer scope", "Don't unnecessarily nest functions. This function " + pure, tree);
 				} else {
-					// Only complain if it's nested inside of a FUNCTION: TODO
 					var complain = false;
 					var p = tree.parent;
 					while (p) {
@@ -376,16 +378,27 @@ function usesStage(parse) {
 			vs = search(tree.index, vs);
 			var base = tree.base;
 			var index = tree.index;
-			if (base.type === "Identifier" && index.type === "Identifier") {
-				// Check that t[i] isn't being done in a for loop
-				var vb = get(base.name);
-				var vi = get(index.name);
-				if (vb && vi && vb.length > 0 && vi.length > 0) {
-					if (vi[0].parent === vb[0].parent.parent && vi[0].parent.type === "ForGenericStatement") {
-						if (vb[0].parent.type === "CallExpression" && vb[0].parent.base.name === "pairs" || vb[0].parent.base.name === "ipairs") {
-							// COMPLAIN!
-							// TODO fix this
-							error("bad", "bad", tree);
+			if (tree.parent.type !== "AssignmentStatement" || tree.property != "variables") {
+				if (base.type === "Identifier" && index.type === "Identifier") {
+					// Check that t[i] isn't being done in a for loop
+					var nb = base.name;
+					var vi = get(vs, index.name);
+					var forloop = vi.definition;
+					if (forloop && forloop.type === "ForGenericStatement") {
+						var it = forloop.iterators[0];
+						if (it.type === "CallExpression" && it.base.type === "Identifier" && (it.base.name === "pairs" || it.base.name === "ipairs")) {
+							if (it.arguments.length && it.arguments[0].type === "Identifier") {
+								if (it.arguments[0].name == nb) {
+									var vv = forloop.variables[1];
+									if (vv) {
+										warn("Use of <code>" + show(tree) + "</code> instead of <code>" + vv.name + "</code>",
+											"You should use this variable instead of retyping this expression.", tree);
+									} else {
+										warn("Use of <code>" + show(tree) + "</code> instead of using <code>" + it.base.name + "</code>'s second variable",
+											"You should use it instead of computing it yourself.", tree);
+									}
+								}
+							}
 						}
 					}
 				}

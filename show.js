@@ -126,7 +126,7 @@ function showTree(tree, pp) {
 		s += "(" + showTree(tree.parameters).join(", ") + ")" + body(tree.body) + sKey("end");
 		return s;
 	} else if (tree.type === "ReturnStatement") {
-		var s = sKey("return"); 
+		var s = sKey("return");
 		if (tree.arguments.length === 0) {
 			return s + ";";
 		}
@@ -284,7 +284,7 @@ function highlightProblems(text, tree) {
 	}
 }
 
-// TODO: fix me
+
 function suggestSolutions(text, tree) {
 	if (tree.suggestion) {
 		return "<span class=pgray>" + show(tree.suggestion) + "</span>";
