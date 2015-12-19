@@ -255,6 +255,9 @@ function isTruthy(tree) {
 			return isTruthy(tree.left) || isTruthy(tree.right);
 		}
 	}
+	if (tree.type === "TableConstructorExpression") {
+		return true;
+	}
 	return false;
 }
 
@@ -394,8 +397,34 @@ function checkBadCondition(tree, complainRight) {
 	}
 }
 
+function last(list) {
+	return list[list.length-1];
+}
+
 function searchBadCondition(tree) {
 	if (tree["condition"]) {
+		if (isTruthy(tree.condition) || isFalsey(tree.condition)) {
+			var okay = false;
+			var warning = false;
+			if (tree.type === "WhileStatement" && isTruthy(tree.condition)) {
+				console.log(tree.parent);
+				okay = true;
+				warning = last(tree.parent.body) !== tree;
+				// TODO: account for breaks & returns
+
+			}
+			if (tree.type === "RepeatStatement" && isFalsey(tree.condition)) {
+				console.log(tree.parent);
+				okay = true;
+				warning = last(tree.parent.body) !== tree;
+				// TODO: account for breaks & returns
+			}
+			if (!okay || warning) {
+				var f = warning ? warn : error;
+				f("Constant used as condition", "The value <code>" + show(tree.condition) + "</code> is always " +
+					(isTruthy(tree.condition) ? "truthy" : "falsey"), tree.condition);
+			}
+		}
 		checkBadCondition(tree.condition, true);
 	} else {
 		checkBadCondition(tree, false);
