@@ -11,9 +11,37 @@ function antipatternStage(parse) {
 	lprecurse(parse, badIndex);
 	lprecurse(parse, endingUnderscore);
 	lprecurse(parse, successiveIfComplaints);
+	lprecurse(parse, complainReturnNil);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+// Complain about a redundant `return` or `return nil` at the end of a function:
+function checkReturnStatementNil(e) {
+	if (e.type === "ReturnStatement") {
+		var notNil = false;
+		for (var i = 0; i < e.arguments.length; i++) {
+			if (e.arguments[i].type !== "NilLiteral") {
+				notNil = true;
+				break;
+			}
+		}
+		if (!notNil) {
+			warn("Unnecessary <code>return</code>", "Functions implicitly return <code>nil</code>.", e);
+		}
+	}
+}
+
+function complainReturnNil(e) {
+	if (e.type === "FunctionDeclaration") {
+		if (e.body.length) {
+			var last = e.body[e.body.length - 1];
+			checkReturnStatementNil(last);
+			// TODO: generalize for ifs and dos.
+		}
+	}
+}
+
 
 function booleanClauses(e) {
 	if (e.type === "LogicalExpression" && e.Operator == "and") {
@@ -33,6 +61,7 @@ function intersect(a, b) {
 	return c;
 }
 
+// Warn if the same clause appears in two successive if statements
 function successiveIfs(a, b) {
 	var ca = booleanClauses(a.clauses[0].condition);
 	for (var i = 1; i < a.clauses.length; i++) {
@@ -70,6 +99,7 @@ function isUnderscores(n) {
 	return n.replace(/_/g, "").length === 0 && n.length > 0;
 }
 
+// Warn about an unnecessary _ at the end of a list of variables
 function endingUnderscore(t) {
 	function check(v, to) {
 		for (var i = v.length - 1; i >= (to || 0); i--) {
@@ -107,6 +137,8 @@ function isIdentifier(text) {
 	return text.replace(/^[a-zA-Z_][a-zA-Z_0-9]+$/, "").length === 0;
 }
 
+// Complain about using ["property"] instead of .property when .property is
+// legal.
 function badIndex(tree) {
 	if (tree.type === "IndexExpression") {
 		if (tree.index.type === "StringLiteral") {
@@ -119,6 +151,7 @@ function badIndex(tree) {
 	}
 }
 
+// Complain about more values than variables in an assignment.
 function badAssignment(tree) {
 	if (tree.type === "AssignmentStatement" || tree.type === "LocalStatement") {
 		if (tree.variables.length < tree.init.length) {
@@ -144,6 +177,7 @@ function badAssignment(tree) {
 	}
 }
 
+// Complain about empty loops.
 function badLoop(tree) {
 	if (tree.type === "ForNumericStatement" || tree.type === "ForGenericStatement") {
 		if (tree.body.length === 0) {
@@ -206,6 +240,8 @@ function antiTruthyPost(tree, context) {
 	}
 }
 
+// Warn about `not` applied to an operand of `==`.
+// Warn about `not` being applied to a literal.
 function badNot(tree) {
 	if (tree.type == "BinaryExpression" && tree.operator == "==") {
 		if (tree.left.type == "UnaryExpression" && tree.left.operator == "not") {
@@ -222,6 +258,7 @@ function badNot(tree) {
 	}
 }
 
+// Complain about comparing to a table literal.
 function badComparisons(tree) {
 	if (tree.type == "BinaryExpression") {
 		var relation = ["==", "<", "~=", ">", "<=", ">="];
@@ -337,6 +374,7 @@ function equiv(a, b) {
 	}
 }
 
+// Warn about an `if` guarding a `repeat` statement.
 function badRepeat(tree) {
 	if (tree.type == "IfStatement") {
 		if (tree.clauses.length != 1) {
@@ -353,6 +391,8 @@ function badRepeat(tree) {
 	}
 }
 
+// Warn about boolean expressions involving constants (which are identities or
+// annihilators)
 function checkBadCondition(tree, complainRight) {
 	// Always true or always false conditions are bad.
 	if (tree.type == "LogicalExpression") {
