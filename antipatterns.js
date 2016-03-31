@@ -543,7 +543,7 @@ function antiFFCDot(tree) {
 				tree.base = {type: "IndexExpression", base: left, index: name};
 				var soln = show(tree);
 				tree.base = temp;
-				error("You index a result of <code>:FindFirstChild</code>",
+				warn("You index a result of <code>:FindFirstChild</code>",
 					"Your code uses <code>" + show( tree ) + "</code>. Using "
 					+ "<code>.</code> or <code>:</code> on the result of "
 					+ "<code>:FindFirstChild</code> will result in an error if "

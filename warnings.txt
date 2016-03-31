@@ -1,0 +1,54 @@
+antipatterns.js:			warn("Unnecessary <code>return</code>", "Functions implicitly return <code>nil</code>.", e);
+antipatterns.js:		warn("Conditions repeated in consecutive <code>if</code>s",
+antipatterns.js:				warn("Use <code>" + show(r) + "</code> instead of indexing by a string", "Indexing should be used for variables or names which need it.", tree);
+antipatterns.js:					warn("Use normal function declaration syntax",
+antipatterns.js:				warn(
+antipatterns.js:					warn(
+antipatterns.js:			warn("Comparing <code>not</code> of value",
+antipatterns.js:				warn("Consider using a <code>while</code> instead [DRY]",
+antipatterns.js:			var warning = false;
+antipatterns.js:				warning = last(tree.parent.body) !== tree;
+antipatterns.js:				warning = last(tree.parent.body) !== tree;
+antipatterns.js:			if (!okay || warning) {
+antipatterns.js:				var f = warning ? warn : error;
+antipatterns.js:			warn("Unnecessary comparison in condition",
+clobber.js:					warn(iden.purpose + "<code>" + e.name + "</code>'s previous value is "
+clobber.js:// Closes a scope on the stack. Emits warnings based on decaying variables.
+clobber.js:					method = warn;
+clobber.js:			warn(i.purpose + "<code>" + name + "</code> was written to, but never "
+clobber.js:				warn("Definition of global <code>" + e.name + "</code> after first use",
+clobber.js:			warn("Use of " + iden.purpose + "<code>" + iden.name + "</code>",
+clobber.js:			"version", "Version", "Wait", "warn",
+hoverables.js:			warning: "pyellow",
+luafix2.js:var warnCount = 0;
+luafix2.js:function warn(strong, msg, tree) {
+luafix2.js:	warnCount++;
+luafix2.js:	message(strong, msg || "", "warning", tree);
+luafix2.js:		warn("Use of string-call-expression",
+luafix2.js:		warn("Use of table-call-expression",
+luafix2.js:		//warn("Place spaces around operators",
+luafix2.js:	warnCount = 0;
+luafix2.js:		warnCount + "</strong> warnings.", false);
+luafix2.js:	// 2) Style warnings requiring parse
+magic.js:					warn("Use of magic value <code>" + care + "</code> more than once.",
+names.js:		//warn("Variable name <code>" + iden.name + "</code> doesn't match style", "", iden);
+newclobber.js:		return {name:name, message:message, kind:"warning"};
+newclobber.js:			"warn", "ypcall",
+newclobber.js:			// (warn for other controls)
+newclobber.js:		warn("<code>" + name +"</code> shadows another variable",
+newclobber.js:				warn("Redefinition of global <code>" + name + "</code>",
+redundant.js:			warn("Use of <code>else if .... end end</code> instead of " +
+redundant.js:					warn("Repetition of <code>" + ends[j].key + "</code> in " +
+redundant.js:					warn("Repetition of <code>" + ends[j].key + "</code> in " +
+redundant.js:			warn("Excessive repetition in code: <code>" + k + "</code>",
+show.js:			if (problems[i].type === "warning") {
+show.js:			var num = {"info": 1, "warning": 2, "error": 3}
+show.js:			warning: "yellow",
+uses.js:						warn("This function can be defined in an outer scope", "Don't unnecessarily nest functions. This function " + pure, tree);
+uses.js:										warn("Use of <code>" + show(tree) + "</code> instead of <code>" + vv.name + "</code>",
+uses.js:										warn("Use of <code>" + show(tree) + "</code> instead of using <code>" + it.base.name + "</code>'s second variable",
+uses.js:					f = warn;
+uses.js:				// TODO: If all functions to create this are pure and it's not a parameter, then warn
+uses.js:				// warn("This assignment to <code>" + sources[i].name + "</code> is only written to", "Did you forget to use it fully?" + addendum, sources[i]);
+variabletrack.js:		warn("<code>local " + name +
+variabletrack.js:		warn("<code>local " + name + "</code> covers up a global variable");

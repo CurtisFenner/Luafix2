@@ -1,0 +1,93 @@
+antipatterns.js:				error("Unnecessary identifier", "Since <code>" + v[i].name + "</code> won't be used, it should be dropped.", v[i]);
+antipatterns.js:			error(
+antipatterns.js:			error("Empty loop", "This loop will not do anything.", tree);
+antipatterns.js:				error("Infinite loop will crash", "This infinite loop will crash. Add a body to it or change the condition.", tree);
+antipatterns.js:			error("A <code>not</code> of a literal is always <code>false</code>",
+antipatterns.js:				error("Expression is always <code>" + (operator == "~=") +"</code>",
+antipatterns.js:				error("Redundant comparison",
+antipatterns.js:			error("Logical operator is unnecessary", "The left and right expressions are the same", tree);
+antipatterns.js:				error("Condition is always <code>false</code>",
+antipatterns.js:				error("Condition is always <code>false</code>",
+antipatterns.js:				error("Right side of <code>and</code> is redundant",
+antipatterns.js:				error("Left side of <code>and</code> is redundant",
+antipatterns.js:				error("Condition is always <code>true</code>",
+antipatterns.js:				error("Condition is always <code>true</code>",
+antipatterns.js:				error("Left side of <code>or</code> is redundant",
+antipatterns.js:				error("Right side of <code>or</code> is redundant",
+antipatterns.js:				var f = warning ? warn : error;
+antipatterns.js:				error("You index a result of <code>:FindFirstChild</code>",
+antipatterns.js:					+ "<code>:FindFirstChild</code> will result in an error if "
+clobber.js:				error(i.purpose + "<code>_</code> was used.",
+clobber.js:					error("Modifying " + iden.purpose + " <code>" + iden.name + "</code>",
+clobber.js:			error(i.purpose + "<code>_</code> was used.",
+clobber.js:				var method = error;
+clobber.js:				error(iden.purpose + "<code>local " + e.name
+clobber.js:				error(purpose + "<code>local " + e.name + "</code> covers " + 
+clobber.js:				error("Definition of global " + purpose + " <code>" + e.name
+clobber.js:		error("Ending tuple with <code>_</code>",
+clobber.js:						error("Indexing <code>" + showu( tree ) +
+clobber.js:		"select", "gcinfo", "rawget", "load", "error", "loadfile", "dofile",
+clobber.js:		"code is producing errors, you should address those errors rather than " +
+clobber.js:		"code is producing errors, you should address those errors rather than " +
+clobber.js:			"code is producing errors, you should address those errors rather than " +
+clobber.js:			error("Use of undefined variable <code>" + name + "</code>",
+hoverables.js:			error: "pred"
+luafix2.js:var errorCount = 0;
+luafix2.js:function error(strong, msg, tree) {
+luafix2.js:	errorCount++;
+luafix2.js:	message(strong, msg || "", "error", tree);
+luafix2.js:	errorCount = 0;
+luafix2.js:		error(e);
+luafix2.js:	info("LuaFix finished.", "<strong>" + errorCount +
+luafix2.js:		"</strong> errors and <strong>" +
+luaparse.js:	// As this parser is a bit different from luas own, the error messages
+luaparse.js:	var errors = exports.errors = {
+luaparse.js:	// The passed tokens location will automatically be added to the error
+luaparse.js:			, error, col;
+luaparse.js:			error = new SyntaxError(sprintf('[%1:%2] %3', token.line, col, message));
+luaparse.js:			error.line = token.line;
+luaparse.js:			error.index = token.range[0];
+luaparse.js:			error.column = col;
+luaparse.js:			error = new SyntaxError(sprintf('[%1:%2] %3', line, col, message));
+luaparse.js:			error.index = index;
+luaparse.js:			error.line = line;
+luaparse.js:			error.column = col;
+luaparse.js:		throw error;
+luaparse.js:	// #### Raise an unexpected token error.
+luaparse.js:		raise(token, errors.expectedToken, type, token.value);
+luaparse.js:	// #### Raise a general unexpected error
+luaparse.js:					return raise(found, errors.unexpected, 'symbol', 'nil', near);
+luaparse.js:			return raise(found, errors.unexpected, type, found.value, near);
+luaparse.js:		return raise(found, errors.unexpected, 'symbol', found, near);
+luaparse.js:				return raise({}, errors.expected, '=', '~');
+luaparse.js:				raise({}, errors.unfinishedString, string + String.fromCharCode(charCode));
+luaparse.js:		if (false === string) raise(token, errors.expected, '[', token.value);
+luaparse.js:			raise({}, errors.malformedNumber, input.slice(tokenStart, index));
+luaparse.js:				raise({}, errors.malformedNumber, input.slice(tokenStart, index));
+luaparse.js:				raise({}, errors.malformedNumber, input.slice(tokenStart, index));
+luaparse.js:		else raise(token, errors.expected, value, token.value);
+luaparse.js:			raise(token, errors.invalidVar, token.value);
+luaparse.js:		// Keep a reference to the previous token for better error messages in case
+luaparse.js:						// throw an error.
+newclobber.js:		return {name:name, message:message, kind:"error"};
+newclobber.js:		return fake(["assert", "collectgarbage", "dofile", "error", "_G", "gcinfo",
+newclobber.js:			okay("pcall", "Write code that doesn't error rather than use <code>pcall</code> to cover it up."),
+newclobber.js:			"load", "error", "loadfile"]);
+newclobber.js:			error("Definition of global <code>" + name + "</code> in a function",
+newclobber.js:				error("Undefined variable <code>" + name + "</code>",
+redundant.js:			error("Empty body in <code>else</code>",
+redundant.js:					error("Repetition of <code>" + ends[j].key + "</code> in " +
+show.js:			} else if (problems[i].type === "error") {
+show.js:			var num = {"info": 1, "warning": 2, "error": 3}
+show.js:			error: "red",
+uses.js:					error(dic[i][key].locked[0], dic[i][key].locked[1], val[0]); // TODO: check me
+uses.js:					error("This function can be defined in an outer scope", "Don't unnecessarily nest functions. This function " + pure, tree);
+uses.js:				var f = error;
+uses.js:			error("Variables named <code>_</code> should not be read", "This variable name is reserved to mean the variable is unnecessary.", sources[i]);
+variabletrack.js:			error("Use of undefined variable " + name,
+variabletrack.js:				error("Truthy Value in <code>or</code>",
+variabletrack.js:				error("Truthy Value in <code>and</code>",
+variabletrack.js:					error("Cannot call <code>" + show(value.base) + "</code>, a " + base[i].sort + " value.");
+variabletrack.js:						error("Definition of global <code>" + variable.name + "</code> not at the top level",
+variabletrack.js:						error("The variable <code>" + variable.name + 
+variabletrack.js:			error("<code>" + varname + "</code> is unused.",

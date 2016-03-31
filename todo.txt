@@ -1,0 +1,2 @@
+- Investigate why 'unused assignments' warning is triggered by variable in closure but 'used in closure' message is not generated (24 March 2016)
+- Add warning about same 'if' or 'for' in every branch of an 'if' (24 March 2016)
