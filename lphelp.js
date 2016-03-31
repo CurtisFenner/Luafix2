@@ -106,16 +106,28 @@ function isBlock(tree) {
 }
 
 var idnum = 0;
+// Recursively descends through a tree.
+// pre() is called on object (but not arrays)
+// fun() is called on object (but on arrays)
+// (descends on children)
+// post() is called on object
 function lprecurse(tree, fun, pre, post, arg) {
 	if (!tree.parent) {
 		tree.parent = {};
 	}
-	if (tree.type) {
+	if (tree instanceof Array) {
+		for (var i = 0; i < tree.length; i++) {
+			tree[i].parent = tree.parent; // tree is a list.
+			tree[i].arrayindex = i;
+			tree[i].property = tree.property;
+			lprecurse(tree[i], fun, pre, post, arg);
+		}
+	} else if (tree.type) {
 		tree.idnum = idnum;
 		idnum++;
 		// Fill in Parent for unsearch properties
 		if (tree.type == "FunctionDeclaration") {
-			// Set Parent of 
+			// Set Parent of
 			var k = tree;
 			while (k.identifier) {
 				k.identifier.parent = k;
@@ -129,7 +141,7 @@ function lprecurse(tree, fun, pre, post, arg) {
 			}
 		}
 		// Do "before" work
-		if (pre && isBlock(tree) && !(tree instanceof Array)) {
+		if (pre) {
 			pre(tree, arg);
 		}
 		// Do "here" work
@@ -155,19 +167,11 @@ function lprecurse(tree, fun, pre, post, arg) {
 			}
 		}
 		// Do "after" work
-		if (post && isBlock(tree) && !(tree instanceof Array)) {
+		if (post) {
 			post(tree, arg);
 		}
 	} else {
-		// Search in lists
-		if (tree instanceof Array) {
-			for (var i = 0; i < tree.length; i++) {
-				tree[i].parent = tree.parent; // tree is a list.
-				tree[i].arrayindex = i;
-				tree[i].property = tree.property;
-				lprecurse(tree[i], fun, pre, post, arg);
-			}
-		} // Otherwise some literal, which we do nothing with.
+		console.log("Unexpected object", tree, "received in lprecurse");
 	}
 }
 
