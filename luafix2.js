@@ -136,7 +136,6 @@ function luafix2() {
 	variableStage(parse);
 	codeReuseStage(parse, source);
 	antipatternStage(parse, source);
-	usesStage(parse);
 	magicStage(parse, source);
 	nameStage(parse);
 	info("LuaFix finished.", "<strong>" + errorCount +
