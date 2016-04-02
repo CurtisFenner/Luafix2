@@ -25,7 +25,8 @@ window.onmouseover=function(e) {
 		var map = {
 			info: "pblue",
 			warning: "pyellow",
-			error: "pred"
+			error: "pred",
+			implementation: "ppurple",
 		};
 		line.className = map[problems[i].type];
 		list.appendChild(line);

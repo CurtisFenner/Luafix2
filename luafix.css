@@ -30,7 +30,7 @@ body {
 	color: #6782D3;
 }
 
-.pyellow, .pred, .pblue, .pgray {
+.pyellow, .pred, .pblue, .pgray, .ppurple {
 	display: inline;
 	padding: .25em;
 }
@@ -54,6 +54,11 @@ body {
 .pblue {
 	border-bottom: 3px solid #DDDDFF;
 	background: #EEEEFF;
+}
+
+.pundefined {
+
+	background: gray;
 }
 
 .post .problemtext {
