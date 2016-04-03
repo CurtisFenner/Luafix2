@@ -21,6 +21,60 @@ precedence["and"] = 6;
 ambiguous[7] = true;
 precedence["or"] = 7; // cheat?
 
+function arrowHead(t, x, y, dx, dy) {
+	var C = [x, y];
+	var A = [x - dx * 10 - dy * 5, y - dy * 10 + dx * 5];
+	var B = [x - dx * 10 + dy * 5, y - dy * 10 - dx * 5];
+	t.moveTo(C[0], C[1]);
+	t.lineTo(A[0], A[1]);
+	t.lineTo(B[0], B[1]);
+	t.fillStyle = "black";
+	t.fill();
+	console.log(A, B, C);
+}
+
+function showArrow(from, to) {
+	var c = document.createElement("canvas");
+	post.appendChild(c);
+	var x = Math.min(from.x, to.x);
+	var y = Math.min(from.y, to.y);
+	var dx = to.x - from.x;
+	var dy = to.y - from.y;
+	var w = Math.abs(dx);
+	var h = Math.abs(dy);
+	var dm = Math.sqrt(dx * dx + dy * dy);
+	c.width = w;
+	c.height = h;
+	c.style.position = "absolute";
+	c.style.left = x + "px";
+	c.style.top = y + "px";
+	c.style.opacity = "0.5";
+	var t = c.getContext('2d');
+	if ((from.x == x && from.y == y) || (to.x == x && to.y == y)) {
+		t.moveTo(0, 0);
+		t.lineTo(w, h);
+	} else {
+		t.moveTo(w, 0);
+		t.lineTo(0, h);
+	}
+	t.stroke();
+	arrowHead(t, to.x - x, to.y - y, dx / dm, dy / dm);
+}
+
+function showArrows(arrows) {
+	function center(x) {
+		var e = document.getElementById("tree" + x);
+		console.log(e);
+		return {
+			x: e.offsetLeft + e.offsetWidth / 2,
+			y: e.offsetTop + e.offsetHeight / 2,
+		};
+	}
+	for (var i = 0; i < arrows.length; i++) {
+		showArrow(center(arrows[i].from), center(arrows[i].to));
+	}
+}
+
 function tab(s) {
 	return "\t" + s.replace(/\n/g, "\n\t");
 }
@@ -278,10 +332,9 @@ function highlightProblems(text, tree) {
 		hoverProblemKey = HoverProblems.length;
 		HoverProblems.push(problems);
 		text = "<span data-problem-key=" + hoverProblemKey + ">" + text + "</span>"
-		return text;
-	} else {
-		return text;
+		//return "<span id=p" + tree.idnum + ">" + text + "</span>";
 	}
+	return "<span id='tree" + tree.idnum + "'>" + text + "</span>";
 }
 
 

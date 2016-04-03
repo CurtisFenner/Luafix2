@@ -6,7 +6,8 @@ function Variable(name) {
 	}
 	this.name = name;
 	this.value = "uninitialized";
-	this.reads = [];
+	this.assignments = [];
+	//this.assignment = "constructor...";
 }
 Variable.prototype.assign = function assign(value, assignment, mayIgnore) {
 	// value: the value to be assigned
@@ -15,53 +16,62 @@ Variable.prototype.assign = function assign(value, assignment, mayIgnore) {
 	// mayIgnore: do not warn about value being unused
 	this.check();
 	this.value = value;
-	this.assignment = assignment;
-	this.mayIgnore = mayIgnore;
-	this.reads = [];
+	this.assignments = [assignment];
+	if (!assignment) {
+		throw "no assignment given to assign";
+	}
+	assignment.reads = assignment.reads || [];
+	assignment.mayIgnore = mayIgnore; // TODO check this
+	assignment.definition = this.definition;
 };
 Variable.prototype.copy = function copyVariable() {
 	var v = new Variable(this.name);
 	v.value = this.value.slice(0);
-	v.reads = this.reads.slice(0);
 	v.mayIgnore = this.mayIgnore;
+	v.assignments = this.assignments.slice(0);
+	v.definition = this.definition;
 	return v;
 };
 
 Variable.prototype.check = function check() {
-	if (this.mayIgnore) {
-		// do nothing
-	} else {
-		if (this.reads.length === 0) {
-			error("Unused assignment", "The value of <code>" + this.name + "</code> wasn't used.", this.assignment);
-		}
-	}
+	// Do nothing?
 };
 Variable.prototype.read = function read(source) {
+	if (!source) {
+		throw "Cannot read without source";
+	}
 	if (this.value === "uninitialized") {
 		throw "Variable in invalid state. value was not initialized";
 	}
-	this.reads.push(source);
+	for (var i = 0; i < this.assignments.length; i++) {
+		this.assignments[i].reads.push(source);
+	}
 	return this.value;
 };
 
 Variable.prototype.merged = function merged(other) {
-	if (this.name != other.name) {
+	if (this.name !== other.name) {
 		throw "cannot merge variables with different names: " + this.name + "/" + other.name;
+	}
+	if (this.definition !== other.definition) {
+		console.log(this, other);
+		throw ["cannot merge variables with different definitions", this.definition, other.definition];
 	}
 	var r = new Variable(this.name);
 	r.value = setUnion( this.value, other.value );
 	r.mayIgnore = this.mayIgnore && other.mayIgnore;
-	r.reads = setUnion(this.reads, other.reads); // TODO: verify this is right
-	r.assignment = this.assignment; // TODO: resolve this with setUnion
+	// r.reads = setUnion(this.reads, other.reads); // TODO: verify this is right
+	r.assignments = setUnion(this.assignments, other.assignments); // TODO: resolve this with setUnion
+	r.definition = this.definition;
 	return r;
-}
+};
 
 function builtin(name) {
 	var x = new Variable(name);
 	//x.assign(["any"], null, true);
 	x.value = ["any"];
-	x.assignment = null;
 	x.mayIgnore = true;
+	x.definition = null; // (global)
 	return x;
 }
 
@@ -108,11 +118,12 @@ VariableContext.prototype.read = function read(tree) {
 		// TODO: standardize types;
 		// if it's a global set elsewhere, return "any" type instead (since I can't track value but isn't necessarily wrong)
 	}
-	return x.read();
+	return x.read(tree);
 };
 
 VariableContext.prototype.local = function local(parse) {
 	var x = new Variable(parse.name);
+	x.definition = parse;
 	this.stack[this.stack.length-1].push(x);
 	return x;
 };
@@ -141,6 +152,8 @@ VariableContext.prototype.assign = function assign(parse, value, mayIgnore/*??*/
 			throw ["Invalid parameter 'parse'", parse];
 		}
 		x = new Variable(parse.name);
+		x.definition = false;
+		x.mayIgnore = true; // <-- new globals can have old (uninitialized) ignored
 		x.assign(value, parse, mayIgnore);
 		this.globals[parse.name] = x;
 	}
@@ -148,9 +161,10 @@ VariableContext.prototype.assign = function assign(parse, value, mayIgnore/*??*/
 
 function setUnion(a, b) {
 	if (a instanceof Array && b instanceof Array) {
-		var x = a.concat(b);
-		x.sort();
-		return x; // TODO: Remove duplicates
+		var x = a.concat(b).filter(function(item, pos, arr) { // Remove duplicates
+			return arr.indexOf(item) === pos;
+		});
+		return x;
 	} else {
 		throw ["invalid parameters to setUnion", a, b];
 	}
@@ -176,7 +190,6 @@ VariableContext.prototype.merged = function merged(otherContext) {
 };
 
 VariableContext.prototype.check = function check(scope) {
-	console.log("check[" , scope, "]");
 	for (var i = 0; i < scope.length; i++) {
 		scope[i].check();
 	}
@@ -203,10 +216,23 @@ function computeType(tree, tuple, context) {
 	return ["type"];
 }
 
+var ARROWS = [];
 function variableStage(parse) {
+	ARROWS = [];
 	var context = {variables: new VariableContext()};
 	variablePass(parse, context);
 	context.variables.finish();
+	lprecurse(parse, function(parse) {
+		//info(parse.idnum, parse.type, parse);
+		if (parse.definition !== undefined) {
+			parse.reads.map(function(v) {
+				ARROWS.push({to: parse.idnum, from: v.idnum});
+			});
+			if (!parse.mayIgnore && parse.reads.length === 0) {
+				error("Unused assignment", "This assignment to <code>" + parse.name + "</code> was never used. Did you forget to use it?", parse);
+			}
+		}
+	});
 	//lprecurse(parse, variableProcess, variablePre, variablePost, context);
 }
 
@@ -221,6 +247,7 @@ var OPENER = [
 ];
 
 function variablePass(parse, context) {
+	console.log(parse.type);
 	if (!context || !context.variables) {
 		throw "invalid context";
 	}
@@ -290,6 +317,14 @@ function variablePass(parse, context) {
 			context.variables = c;
 		}
 		break;
+	case 'IfClause':
+	case 'ElseClause':
+	case 'ElseifClause':
+		// (condition has already been executed)
+		for (var i = 0; i < parse.body.length; i++) {
+			variablePass(parse.body[i], context);
+		}
+		break;
 	// EXPRESSIONS
 	case 'CallExpression':
 		variablePass(parse.base, context);
@@ -308,59 +343,3 @@ function variablePass(parse, context) {
 		implementation("variablePass cannot respond to <code>" + parse.type + "</code>", "", parse);
 	}
 }
-
-
-/*
-function variablePre(parse, context) {
-	context = (parse.parent && parse.parent.context) || context;
-	context.variables = context.variables.copy();
-	console.log("<" + parse.type + ">");
-	var type = parse.type;
-	parse.opens = OPENER.indexOf(type) >= 0;
-	if (parse.opens) {
-		context.variables.open();
-	}
-}
-
-function variableProcess(parse, context) {
-	if (parse.type === "Identifier" && parse.property !== "variables") {
-		context.variables.read(parse);
-	}
-}
-
-function variablePost(parse, context) {
-	console.log("</" + parse.type + ">");
-	if (parse.opens) {
-		context.variables.close();
-	}
-	if (parse.type === "AssignmentStatement" || parse.type === "LocalStatement") {
-		// Assign variables
-		// TODO: deal correctly with tuples
-		var values = [];
-		for (var i = 0; i < parse.init.length; i++) {
-			values[i] = computeType(parse.init[i], 0, context);
-		}
-		for (var i = parse.init.length; i < parse.variables.length; i++) {
-			values[i] = computeType(parse.init[parse.init.length-1], i - parse.init.length+1, context);
-		}
-		for (var i = 0; i < parse.variables.length; i++) {
-			var variable = parse.variables[i];
-			if (variable.type === "Identifier") {
-				if (parse.type === "LocalStatement") {
-					context.variables.local(variable.name);
-				}
-				context.variables.assign(variable.name, values[i], variable, false);
-			} else {
-				// TODO
-			}
-		}
-	} else if (parse.type === "FunctionDeclaration") {
-		if (parse.isLocal) {
-			context.variables.local(parse.identifier.name);
-		}
-		if (parse.identifier && parse.identifier.type === "Identifier") {
-			context.variables.assign(parse.identifier.name, computeType(parse), parse.identifier, false);
-		}
-	}
-}
-*/
