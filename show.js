@@ -30,7 +30,6 @@ function arrowHead(t, x, y, dx, dy) {
 	t.lineTo(B[0], B[1]);
 	t.fillStyle = "black";
 	t.fill();
-	console.log(A, B, C);
 }
 
 function showArrow(from, to) {
@@ -64,7 +63,6 @@ function showArrow(from, to) {
 function showArrows(arrows) {
 	function center(x) {
 		var e = document.getElementById("tree" + x);
-		console.log(e);
 		return {
 			x: e.offsetLeft + e.offsetWidth / 2,
 			y: e.offsetTop + e.offsetHeight / 2,

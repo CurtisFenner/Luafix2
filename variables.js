@@ -247,7 +247,6 @@ var OPENER = [
 ];
 
 function variablePass(parse, context) {
-	console.log(parse.type);
 	if (!context || !context.variables) {
 		throw "invalid context";
 	}
@@ -289,33 +288,33 @@ function variablePass(parse, context) {
 		break;
 	// COMPOUND STATEMENTS
 	case 'IfStatement':
+		var hasElse = false;
 		for (var i = 0; i < parse.clauses.length; i++) {
-			var hasElse = false;
 			if (parse.clauses[i].type === 'ElseClause') {
 				hasElse = true;
 			} else {
 				variablePass(parse.clauses[i].condition, context);
 			}
-			var subs = [];
-			for (var i = 0; i < parse.clauses.length; i++) {
-				var copy = {variables: context.variables.copy()};
-				copy.variables.open();
-				variablePass(parse.clauses[i], copy);
-				copy.variables.close();
-				subs[i] = copy.variables;
-			}
-			// Recombine to make new context.
-			var si = 0;
-			var c = context.variables;
-			if (hasElse) {
-				c = subs[0].variables;
-				si = 1;
-			}
-			for (var i = si; i < subs.length; i++) {
-				c = c.merged(subs[i]);
-			}
-			context.variables = c;
 		}
+		var subs = [];
+		for (var i = 0; i < parse.clauses.length; i++) {
+			var copy = {variables: context.variables.copy()};
+			copy.variables.open();
+			variablePass(parse.clauses[i], copy);
+			copy.variables.close();
+			subs[i] = copy.variables;
+		}
+		// Recombine to make new context.
+		var si = 0;
+		var c = context.variables;
+		if (hasElse) {
+			c = subs[0];
+			si = 1;
+		}
+		for (var i = si; i < subs.length; i++) {
+			c = c.merged(subs[i]);
+		}
+		context.variables = c;
 		break;
 	case 'IfClause':
 	case 'ElseClause':
