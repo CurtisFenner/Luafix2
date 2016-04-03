@@ -123,8 +123,10 @@ function lprecurse(tree, fun, pre, post, arg) {
 			lprecurse(tree[i], fun, pre, post, arg);
 		}
 	} else if (tree.type) {
-		tree.idnum = idnum;
-		idnum++;
+		if (!tree.idnum) {
+			idnum++;
+			tree.idnum = idnum;
+		}
 		// Fill in Parent for unsearch properties
 		if (tree.type == "FunctionDeclaration") {
 			// Set Parent of

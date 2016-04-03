@@ -10,6 +10,7 @@ body {
 	font-family: 'ubuntu mono', monospace;
 	font-size: 14px;
 	line-height: 200%;
+	position: relative;
 }
 .post .key {/* keywords */
 	font-weight: bold;
