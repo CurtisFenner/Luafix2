@@ -277,7 +277,7 @@ function variablePass(parse, context) {
 		for (var i = 0; i < parse.variables.length; i++) {
 			if (parse.variables[i].type === 'Identifier') {
 				if (parse.type === 'LocalStatement') {
-					context.variables.local(parse);
+					context.variables.local(parse.variables[i]);
 				}
 				context.variables.assign(parse.variables[i], values[i], false);
 			}

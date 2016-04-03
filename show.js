@@ -35,12 +35,12 @@ function arrowHead(t, x, y, dx, dy) {
 function showArrow(from, to) {
 	var c = document.createElement("canvas");
 	post.appendChild(c);
-	var x = Math.min(from.x, to.x);
-	var y = Math.min(from.y, to.y);
+	var x = Math.min(from.x, to.x) - 10;
+	var y = Math.min(from.y, to.y) - 10;
 	var dx = to.x - from.x;
 	var dy = to.y - from.y;
-	var w = Math.abs(dx);
-	var h = Math.abs(dy);
+	var w = Math.abs(dx) + 20;
+	var h = Math.abs(dy) + 20;
 	var dm = Math.sqrt(dx * dx + dy * dy);
 	c.width = w;
 	c.height = h;
@@ -49,12 +49,12 @@ function showArrow(from, to) {
 	c.style.top = y + "px";
 	c.style.opacity = "0.5";
 	var t = c.getContext('2d');
-	if ((from.x == x && from.y == y) || (to.x == x && to.y == y)) {
-		t.moveTo(0, 0);
-		t.lineTo(w, h);
+	if ((from.x == x+10 && from.y == y+10) || (to.x == x+10 && to.y == y+10)) {
+		t.moveTo(10, 10);
+		t.lineTo(w-10, h-10);
 	} else {
-		t.moveTo(w, 0);
-		t.lineTo(0, h);
+		t.moveTo(w-10, 10);
+		t.lineTo(10, h-10);
 	}
 	t.stroke();
 	arrowHead(t, to.x - x, to.y - y, dx / dm, dy / dm);
