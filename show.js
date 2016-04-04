@@ -220,8 +220,8 @@ function showTree(tree, pp) {
 		return sKey("while") + " " + show(tree.condition) + " " + sKey("do") + body(tree.body) + sKey("end");
 	} else if (tree.type === "ForGenericStatement") {
 		var s = sKey("for") + " ";
-		s += show(tree.variables).join(", ") + " " + sKey("in") + " ";
-		s += show(tree.iterators).join(", ");
+		s += showTree(tree.variables).join(", ") + " " + sKey("in") + " ";
+		s += showTree(tree.iterators).join(", ");
 		s += " " + sKey("do");
 		return s + body(tree.body) + sKey("end");
 	} else if (tree.type === "RepeatStatement") {
