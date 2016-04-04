@@ -145,7 +145,8 @@ VariableContext.prototype.assign = function assign(parse, value, mayIgnore/*??*/
 	if (x) {
 		x.assign(value, parse, mayIgnore);
 	} else {
-		if (getEnclosingFunction(parse)) {
+		var p = parse.property === 'identifier' ? parse.parent.parent : parse;
+		if (getEnclosingFunction(p)) {
 			error("Global defined in function", "Global <code>" + parse.name + "</code> is defined in a function. Did you make a typo?", parse);
 		}
 		if (parse.type !== 'Identifier') {
@@ -323,6 +324,28 @@ function variablePass(parse, context) {
 		for (var i = 0; i < parse.body.length; i++) {
 			variablePass(parse.body[i], context);
 		}
+		break;
+	// FUNCTIONS
+	case 'FunctionDeclaration':
+		if (parse.identifier && parse.identifier.type === 'Identifier') {
+			// it's an assignment
+			if (parse.isLocal) {
+				context.variables.local(parse.identifier);
+			}
+			context.variables.assign(parse.identifier, computeType(parse), false);
+		}
+		var copy = {variables: context.variables.copy()};
+		copy.variables.open();
+		for (var i = 0; i < parse.parameters.length; i++) {
+			if (parse.parameters[i].type === 'Identifier') {
+				copy.variables.local(parse.parameters[i]);
+			}
+		}
+		for (var i = 0; i < parse.body.length; i++) {
+			variablePass(parse.body[i], copy);
+		}
+		copy.variables.close();
+		context.variables = context.variables.merged(copy.variables);
 		break;
 	// EXPRESSIONS
 	case 'CallExpression':
