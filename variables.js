@@ -217,23 +217,38 @@ function computeType(tree, tuple, context) {
 	return ["type"];
 }
 
+function variableCheck(parse) {
+	if (parse.type === 'ForGenericStatement') {
+		for (var i = 0; i < parse.variables.length; i++) {
+			variableCheck(parse.variables[i]);
+		}
+	}
+	if (parse.type === 'FunctionDeclaration') {
+		for (var i = 0; i < parse.parameters.length; i++) {
+			variableCheck(parse.parameters[i]);
+		}
+		if (parse.identifier) {
+			variableCheck(parse.identifier);
+		}
+	}
+	if (parse.definition !== undefined) {
+		//info(parse.idnum, parse.type, parse);
+		parse.reads.map(function(v) {
+			ARROWS.push({to: parse.idnum, from: v.idnum});
+		});
+		if (!parse.mayIgnore && parse.reads.length === 0) {
+			error("Unused assignment", "This assignment to <code>" + parse.name + "</code> was never used. Did you forget to use it?", parse);
+		}
+	}
+}
+
 var ARROWS = [];
 function variableStage(parse) {
 	ARROWS = [];
 	var context = {variables: new VariableContext()};
 	variablePass(parse, context);
 	context.variables.finish();
-	lprecurse(parse, function(parse) {
-		//info(parse.idnum, parse.type, parse);
-		if (parse.definition !== undefined) {
-			parse.reads.map(function(v) {
-				ARROWS.push({to: parse.idnum, from: v.idnum});
-			});
-			if (!parse.mayIgnore && parse.reads.length === 0) {
-				error("Unused assignment", "This assignment to <code>" + parse.name + "</code> was never used. Did you forget to use it?", parse);
-			}
-		}
-	});
+	lprecurse(parse, variableCheck);
 	//lprecurse(parse, variableProcess, variablePre, variablePost, context);
 }
 
