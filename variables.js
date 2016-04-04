@@ -340,6 +340,34 @@ function variablePass(parse, context) {
 			variablePass(parse.body[i], context);
 		}
 		break;
+	case 'DoStatement':
+		context.variables.open();
+		for (var i = 0; i < parse.body.length; i++) {
+			variablePass(parse.body[i], context);
+		}
+		context.variables.close();
+		break;
+	case 'ForGenericStatement':
+		var copy = {variables: context.variables.copy()};
+		for (var i = 0; i < parse.iterators.length; i++) {
+			variablePass(parse.iterators[i], context);
+		}
+		// Run loop twice with 'copy'
+		for (var count = 0; count < 2; count++) {
+			// TODO make first and second pass use separate structures for
+			// assignment
+			copy.variables.open();
+			for (var i = 0; i < parse.variables.length; i++) {
+				copy.variables.local(parse.variables[i]);
+				copy.variables.assign(parse.variables[i], ["any"], false);
+			}
+			for (var i = 0; i < parse.body.length; i++) {
+				variablePass(parse.body[i], copy);
+			}
+			copy.variables.close();
+		}
+		context.variables = context.variables.merged(copy.variables);
+		break;
 	// FUNCTIONS
 	case 'FunctionDeclaration':
 		if (parse.identifier && parse.identifier.type === 'Identifier') {
