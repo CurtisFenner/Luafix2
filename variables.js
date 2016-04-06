@@ -79,7 +79,25 @@ function VariableContext() {
 	this.globals = {
 		math: builtin("math"),
 		print: builtin("print"),
+		os: builtin("os"),
+		string: builtin("string"),
+		table: builtin("table"),
+		unpack: builtin("unpack"),
+		coroutine: builtin("coroutine"),
+		io: builtin("io"),
 	};
+	if (USE_ROBLOX) {
+		delete this.globals.os;
+		delete this.globals.io;
+		this.globals.wait = builtin("wait");
+		this.globals.workspace = builtin("workspace");
+		this.globals.game = builtin("game");
+		this.globals.script = builtin("script");
+		this.globals.tick = builtin("tick");
+		this.globals.plugin = builtin("plugin");
+		this.globals.spawn = builtin("spawn");
+		this.globals.delay = builtin("delay");
+	}
 	this.stack = [[]];
 }
 
