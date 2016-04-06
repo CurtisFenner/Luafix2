@@ -162,7 +162,7 @@ function luafix2() {
 	//
 	showMode("bare");
 	showAnnotate = identity;
-	showArrows(ARROWS);
+	//showArrows(ARROWS);
 }
 
 document.getElementById("checkbutton").onclick = luafix2;

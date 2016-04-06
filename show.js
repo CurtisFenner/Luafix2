@@ -47,7 +47,7 @@ function showArrow(from, to) {
 	c.style.position = "absolute";
 	c.style.left = x + "px";
 	c.style.top = y + "px";
-	c.style.opacity = "0.5";
+	c.style.opacity = "0.25";
 	var t = c.getContext('2d');
 	if ((from.x == x+10 && from.y == y+10) || (to.x == x+10 && to.y == y+10)) {
 		t.moveTo(10, 10);
@@ -63,13 +63,16 @@ function showArrow(from, to) {
 function showArrows(arrows) {
 	function center(x) {
 		var e = document.getElementById("tree" + x);
-		return {
+		var r = {
 			x: e.offsetLeft + e.offsetWidth / 2,
 			y: e.offsetTop + e.offsetHeight / 2,
 		};
+		return r;
 	}
 	for (var i = 0; i < arrows.length; i++) {
-		showArrow(center(arrows[i].from), center(arrows[i].to));
+		if (arrows[i].to) {
+			showArrow(center(arrows[i].from), center(arrows[i].to));
+		}
 	}
 }
 
