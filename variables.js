@@ -302,6 +302,13 @@ function variablePass(parse, context) {
 	case 'CallStatement':
 		variablePass(parse.expression, context);
 		break;
+	case 'ReturnStatement':
+		for (var i = 0; i < parse.arguments.length; i++) {
+			variablePass(parse.arguments[i], context);
+		}
+		break;
+	case 'BreakStatement':
+		break;
 	// COMPOUND STATEMENTS
 	case 'IfStatement':
 		var hasElse = false;
@@ -335,7 +342,7 @@ function variablePass(parse, context) {
 	case 'IfClause':
 	case 'ElseClause':
 	case 'ElseifClause':
-		// (condition has already been executed)
+		// (condition has already been executed by ElseClause code)
 		for (var i = 0; i < parse.body.length; i++) {
 			variablePass(parse.body[i], context);
 		}
@@ -346,6 +353,52 @@ function variablePass(parse, context) {
 			variablePass(parse.body[i], context);
 		}
 		context.variables.close();
+		break;
+	case 'RepeatStatement':
+		for (var count = 0; count < 2; count++) {
+			context.variables.open();
+			for (var i = 0; i < parse.body.length; i++) {
+				variablePass(parse.body[i], context);
+			}
+			variablePass(parse.condition, context);
+			context.variables.close();
+		}
+		break;
+	case 'WhileStatement':
+		variablePass(parse.condition, context);
+		var copy = {variables: context.variables.copy()};
+		for (var count = 0; count < 2; count++) {
+			copy.variables.open();
+			for (var i = 0; i < parse.body.length; i++) {
+				variablePass(parse.body[i], copy);
+			}
+			copy.variables.close();
+			variablePass(parse.condition, copy);
+		}
+		context.variables = context.variables.merged(copy.variables);
+		break;
+	case 'ForNumericStatement':
+		variablePass(parse.start, context);
+		variablePass(parse.end, context);
+		if (parse.step) {
+			variablePass(parse.step, context);
+		}
+		var copy = {variables: context.variables.copy()};
+		// Run loop twice with copy
+		for (var count = 0; count < 2; count++) {
+			// TODO make first and second pass use separate structures for
+			// assignment
+			copy.variables.open();
+			copy.variables.local(parse.variable);
+			copy.variables.assign(parse.variable, ["number"], false);
+			for (var i = 0; i < parse.body.length; i++) {
+				variablePass(parse.body[i], copy);
+			}
+			copy.variables.close();
+		}
+		context.variables = context.variables.merged(copy.variables);
+		// TODO: determine if it is known statically that the loop runs at least
+		// once
 		break;
 	case 'ForGenericStatement':
 		var copy = {variables: context.variables.copy()};
@@ -370,6 +423,8 @@ function variablePass(parse, context) {
 		break;
 	// FUNCTIONS
 	case 'FunctionDeclaration':
+		// TODO parse.identifier may be member expressions;
+		// do these need variablePass
 		if (parse.identifier && parse.identifier.type === 'Identifier') {
 			// it's an assignment
 			if (parse.isLocal) {
@@ -382,6 +437,7 @@ function variablePass(parse, context) {
 		for (var i = 0; i < parse.parameters.length; i++) {
 			if (parse.parameters[i].type === 'Identifier') {
 				copy.variables.local(parse.parameters[i]);
+				copy.variables.assign(parse.parameters[i], ["any"], false);
 			}
 		}
 		for (var i = 0; i < parse.body.length; i++) {
@@ -391,11 +447,44 @@ function variablePass(parse, context) {
 		context.variables = context.variables.merged(copy.variables);
 		break;
 	// EXPRESSIONS
+	case 'TableKeyString':
+		variablePass(parse.value, context);
+		break;
+	case 'TableValue':
+		variablePass(parse.value, context);
+		break;
+	case 'TableKey':
+		variablePass(parse.key, context);
+		variablePass(parse.value, context);
+		break;
+	case 'TableConstructorExpression':
+		for (var i = 0; i < parse.fields.length; i++) {
+			variablePass(parse.fields[i], context);
+		}
+		break;
+	case 'MemberExpression':
+		variablePass(parse.base, context);
+		break;
+	case 'IndexExpression':
+		variablePass(parse.base, context);
+		variablePass(parse.index, context);
+		break;
 	case 'CallExpression':
 		variablePass(parse.base, context);
 		for (var i = 0; i < parse.arguments.length; i++) {
 			variablePass(parse.arguments[i], context);
 		}
+		break;
+	case 'BinaryExpression':
+		variablePass(parse.left, context);
+		variablePass(parse.right, context);
+		break;
+	case 'LogicalExpression':
+		variablePass(parse.left, context);
+		variablePass(parse.right, context);
+		break;
+	case 'UnaryExpression':
+		variablePass(parse.argument, context);
 		break;
 	case 'Identifier':
 		context.variables.read( parse );
@@ -403,6 +492,7 @@ function variablePass(parse, context) {
 	case 'NumericLiteral':
 	case 'StringLiteral':
 	case 'BooleanLiteral':
+	case 'NilLiteral':
 		break;
 	default:
 		implementation("variablePass cannot respond to <code>" + parse.type + "</code>", "", parse);
