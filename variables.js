@@ -85,10 +85,23 @@ function VariableContext() {
 		unpack: builtin("unpack"),
 		coroutine: builtin("coroutine"),
 		io: builtin("io"),
+		require: builtin("require"),
 	};
+	var builtins = [
+		"pairs", "ipairs", "next", "assert", "error", "pcall",
+		"xpcall", "debug", "_G",
+		"package", "tostring", "tonumber", "getfenv", "setfenv",
+		"select", "rawequal", "collectgarbage", "rawset", "rawget",
+		"newproxy", "loadstring", "load", "loadfile", "dofile", "type",
+		"gcinfo", "_VERSION", 
+	];
+	for (var i = 0; i < builtins.length; i++) {
+		this.globals[ builtins[i] ] = builtin(builtins[i]);
+	}
 	if (USE_ROBLOX) {
 		delete this.globals.os;
 		delete this.globals.io;
+		delete this.globals.debug;
 		this.globals.wait = builtin("wait");
 		this.globals.workspace = builtin("workspace");
 		this.globals.game = builtin("game");
@@ -97,6 +110,13 @@ function VariableContext() {
 		this.globals.plugin = builtin("plugin");
 		this.globals.spawn = builtin("spawn");
 		this.globals.delay = builtin("delay");
+		var builtins = [
+			"Color3", "UDim", "Vector3", "UDim2", "BrickColor", "Enum",
+			"CFrame", "Ray", "Region3", "Instance", "ypcall",
+		];
+		for (var i = 0; i < builtins.length; i++) {
+			this.globals[builtins[i]] = builtin(builtins[i]);
+		}
 	}
 	this.stack = [[]];
 }
@@ -254,7 +274,14 @@ function variableCheck(parse) {
 		parse.reads.map(function(v) {
 			ARROWS.push({to: parse.idnum, from: v.idnum});
 		});
-		if (!parse.mayIgnore && parse.reads.length === 0) {
+		if (parse.name.replace(/_+/g, "") === "") {
+			for (var i = 0; i < parse.reads.length; i++) {
+				warn("Use of placeholder <code>" + parse.name + "</code>",
+					"This value was not given a name. Usually, <code>" +
+					parse.name + "</code> is reserved for values that will not be used.",
+					parse.reads[i]);
+			}
+		} else if (!parse.mayIgnore && parse.reads.length === 0) {
 			error("Unused assignment", "This assignment to <code>" + parse.name + "</code> was never used. Did you forget to use it?", parse);
 		}
 	}
@@ -487,6 +514,13 @@ function variablePass(parse, context) {
 		variablePass(parse.base, context);
 		variablePass(parse.index, context);
 		break;
+	case 'TableCallExpression':
+		variablePass(parse.base, context);
+		variablePass(parse.arguments, context); // "arguments" intentional...
+		break;
+	case 'StringCallExpression':
+		variablePass(parse.base, context);
+		variablePass(parse.argument, context);
 	case 'CallExpression':
 		variablePass(parse.base, context);
 		for (var i = 0; i < parse.arguments.length; i++) {
@@ -507,6 +541,7 @@ function variablePass(parse, context) {
 	case 'Identifier':
 		context.variables.read( parse );
 		break;
+	case 'VarargLiteral':
 	case 'NumericLiteral':
 	case 'StringLiteral':
 	case 'BooleanLiteral':
