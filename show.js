@@ -300,8 +300,15 @@ function showMode(mode) {
 	}
 }
 
-var HoverProblems = [];
-var hoverProblemKey = 0;
+var HoverProblems = {};
+
+
+var informationClassMap = {
+	warning: "pyellow",
+	error: "pred",
+	info: "pblue",
+	implementation: "ppurple",
+};
 
 function highlightProblems(text, tree) {
 	var problems = tree.problems;
@@ -318,24 +325,16 @@ function highlightProblems(text, tree) {
 				blue++;
 			}
 		}
+		var num = {"info": 1, "warning": 2, "error": 3, "implementation": 0};
 		problems.sort(function(a, b) {
-			var num = {"info": 1, "warning": 2, "error": 3}
 			return num[a] < num[b];
-		})
-		var colorMap = {
-			warning: "yellow",
-			error: "red",
-			info: "blue"
-		}
+		});
 		for (var i = 0; i < problems.length; i++) {
-			text = "<span class=p" + colorMap[problems[i].type] + ">" + text + "</span>";
+			text = "<span data-id=" + tree.idnum + " class=" + informationClassMap[problems[i].type] + ">" + text + "</span>";
 		}
-		hoverProblemKey = HoverProblems.length;
-		HoverProblems.push(problems);
-		text = "<span data-problem-key=" + hoverProblemKey + ">" + text + "</span>"
-		//return "<span id=p" + tree.idnum + ">" + text + "</span>";
+		HoverProblems[tree.idnum] = problems;
 	}
-	return "<span id='tree" + tree.idnum + "'>" + text + "</span>";
+	return "<span data-id=" + tree.idnum + " id='tree" + tree.idnum + "'>" + text + "</span>";
 }
 
 

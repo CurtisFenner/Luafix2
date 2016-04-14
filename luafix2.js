@@ -119,6 +119,7 @@ function magicStage(parse) {
 }
 
 function luafix2() {
+	HoverProblems = {}; // Reset list of problems
 	warnCount = 0;
 	errorCount = 0;
 	var source = document.getElementById("source").value;
@@ -163,6 +164,7 @@ function luafix2() {
 	showMode("bare");
 	showAnnotate = identity;
 	//showArrows(ARROWS);
+	SetupHoverables();
 }
 
 document.getElementById("checkbutton").onclick = luafix2;
