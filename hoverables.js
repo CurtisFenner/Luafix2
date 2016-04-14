@@ -23,12 +23,10 @@ function SetupHoverable(element) {
 	var n = element.getAttribute('data-id');
 	var data = HoverProblems[n];
 	if (data && !data.processed) {
-		console.log(element);
 		data.processed = true;
 		element.addEventListener("mouseover", function() {
 			LAST_HOVER = element;
 			ShowHoverProblems(data);
-			console.log("hover", element);
 		});
 		element.addEventListener("mouseout", function() {
 			if (LAST_HOVER === element) {

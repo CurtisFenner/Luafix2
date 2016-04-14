@@ -12,7 +12,6 @@ function getContext(name) {
 	if (from[name.property]) {
 		return from[name.property];
 	}
-	console.log(name.property);
 	return "variable";
 }
 

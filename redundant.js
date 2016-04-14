@@ -91,7 +91,7 @@ function findUnconditional(tree) {
 						"<code>end</code> of this <code>if</code>." +
 						"<b><a href=example/elseifs.html>Example Code</a></b>",
 						ends[j].tree);
-					console.log("SUGGESTION NEEDED IN REDUNDANT FOR ELSE CLAUSE CERTAINY");
+					// TODO: "SUGGESTION NEEDED IN REDUNDANT FOR ELSE CLAUSE CERTAINY")
 				} else {
 					warn("Repetition of <code>" + ends[j].key + "</code> in " +
 						"every <code>elseif</code>", "You include this code "
@@ -148,8 +148,6 @@ function findRepetition(tree) {
 	var weights = {};
 	lprecurse(tree, repObserve, null, null, [counts, weights]);
 	for (k in counts) {
-		//console.log(k);
-		//console.log("", counts[k], weights[k]);
 		if (counts[k] * weights[k] >= 15 && weights[k] > 2 && counts[k] > 2) {
 			// Intervention required.
 			warn("Excessive repetition in code: <code>" + k + "</code>",

@@ -93,7 +93,7 @@ function VariableContext() {
 		"package", "tostring", "tonumber", "getfenv", "setfenv",
 		"select", "rawequal", "collectgarbage", "rawset", "rawget",
 		"newproxy", "loadstring", "load", "loadfile", "dofile", "type",
-		"gcinfo", "_VERSION", 
+		"gcinfo", "_VERSION",
 	];
 	for (var i = 0; i < builtins.length; i++) {
 		this.globals[ builtins[i] ] = builtin(builtins[i]);
@@ -113,6 +113,7 @@ function VariableContext() {
 		var builtins = [
 			"Color3", "UDim", "Vector3", "UDim2", "BrickColor", "Enum",
 			"CFrame", "Ray", "Region3", "Instance", "ypcall",
+			"Vector2",
 		];
 		for (var i = 0; i < builtins.length; i++) {
 			this.globals[builtins[i]] = builtin(builtins[i]);

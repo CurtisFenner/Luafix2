@@ -447,14 +447,12 @@ function searchBadCondition(tree) {
 			var okay = false;
 			var warning = false;
 			if (tree.type === "WhileStatement" && isTruthy(tree.condition)) {
-				console.log(tree.parent);
 				okay = true;
 				warning = last(tree.parent.body) !== tree;
 				// TODO: account for breaks & returns
 
 			}
 			if (tree.type === "RepeatStatement" && isFalsey(tree.condition)) {
-				console.log(tree.parent);
 				okay = true;
 				warning = last(tree.parent.body) !== tree;
 				// TODO: account for breaks & returns
