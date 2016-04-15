@@ -14,7 +14,6 @@ function clear() {
 	messageCache = {};
 	document.getElementById("report").innerHTML = "";
 	document.getElementById("post").innerHTML = "";
-	document.getElementById("suggested").innerHTML = "";
 }
 
 function message(strong, message, type, tree) {
@@ -154,12 +153,6 @@ function luafix2() {
 	//
 	showAnnotate = suggestSolutions;
 	var sug = show(parse);
-	//if (sug.indexOf("<span class=pgray") >= 0) {
-		document.getElementById("suggested").innerHTML = sug;
-	/*} else {
-		document.getElementById("suggested").innerHTML =
-			"(Cannot offer any automated suggestions)";
-	}*/
 	//
 	showMode("bare");
 	showAnnotate = identity;
