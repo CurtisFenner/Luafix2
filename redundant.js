@@ -1,21 +1,26 @@
 function observe(tree, data) {
-	data.push({tree: tree, string: show(tree)})
+	if (tree.type == "Chunk") {
+		return;
+	}
+	var key = show(tree);
+	data[key] = data[key] || [];
+	data[key].push(tree);
 }
 
 function findRepetition(tree) {
-	var data = [];
+	var data = {};
 	lprecurse(tree, observe, null, null, data);
-	var counts = {};
-	for (var i = 0; i < data.length; i++) {
-		var datum = data[i];
-		counts[datum.string] = (counts[datum.string] || 0) + 1;
-		var count = counts[datum.string];
-		if (count > 1) {
-			// There has been more than one.
-			if (isStatement(datum.tree)) {
-				// TODO
-				//info("Reuse of " + datum.tree.type + " the " + count +
-				//	"th time", "<code>" + datum.string + "</code>", datum.tree);
+	for (var statement in data) {
+		var usages = data[statement].length;
+		var length = statement.length;
+		// TODO: define AST based costs
+		var inline = usages * length;
+		var defined = 40 + 8 * usages + length;
+		if (inline / 2 > defined) {
+			for (var i = 0; i < data[statement].length; i++) {
+				warn("Statement is excessively repeated",
+					"The statement <code>" + statement + "</code> is repeated too much. Using a function or variable, you could save around " + (inline - defined) + " characters, and a lot of typing when you make changes.",
+					data[statement][i]);
 			}
 		}
 	}
