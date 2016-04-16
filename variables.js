@@ -152,8 +152,8 @@ VariableContext.prototype.search = function search(name) {
 VariableContext.prototype.read = function read(tree) {
 	var x = this.search(tree.name);
 	if (!x) {
-		error("Use of undefined variable <code>" + tree.name + "</code>", "This name has not been defined. Did you make a typo?", tree);
-		return ["nil"];
+		tree.undefined = true;
+		return ["any"];
 		// TODO: standardize types;
 		// if it's a global set elsewhere, return "any" type instead (since I can't track value but isn't necessarily wrong)
 	}
@@ -256,7 +256,46 @@ function computeType(tree, tuple, context) {
 	return ["type"];
 }
 
-function variableCheck(parse) {
+// Returns the context of a statement
+function statementContext(parse) {
+	if (parse.property === "identifier" && parse.parent.type === "FunctionDeclaration") {
+		return statementContext(parse.parent.parent);
+	} else if (parse.type === "FunctionDeclaration" || parse.type === "Chunk") {
+		return parse;
+	} else {
+		return statementContext(parse.parent);
+	}
+}
+
+// Preprocess variables to condense usages
+function variableProcess(parse) {
+	if (parse.type === 'ForGenericStatement') {
+		for (var i = 0; i < parse.variables.length; i++) {
+			parse.variables[i].property = "variables";
+			parse.variables[i].parent = parse;
+			variableProcess(parse.variables[i]);
+		}
+	}
+	if (parse.type === 'FunctionDeclaration') {
+		for (var i = 0; i < parse.parameters.length; i++) {
+			parse.parameters[i].property = "parameters";
+			parse.parameters[i].parent = parse;
+			variableProcess(parse.parameters[i]);
+		}
+		if (parse.identifier) {
+			parse.identifier.property = "identifier";
+			parse.identifier.parent = parse;
+			variableProcess(parse.identifier);
+		}
+	}
+	if (parse.definition) {
+		parse.definition.access = parse.definition.access || [];
+		parse.definition.access.push(parse);
+	}
+}
+
+// Check variable usage graph and emit warnings
+function variableCheck(parse, context) {
 	if (parse.type === 'ForGenericStatement') {
 		for (var i = 0; i < parse.variables.length; i++) {
 			variableCheck(parse.variables[i]);
@@ -270,11 +309,26 @@ function variableCheck(parse) {
 			variableCheck(parse.identifier);
 		}
 	}
-	if (parse.definition !== undefined) {
+	if (parse.undefined) {
+		if (!context.variables.globals[parse.name] || statementContext(parse).type === "Chunk") {
+			error("The variable <code>" + parse.name + "</code> is not defined", "This name hasn't been defined. Have you made a typo?", parse);
+		}
+	}
+	if (parse.definition) {
 		//info(parse.idnum, parse.type, parse);
 		parse.reads.map(function(v) {
 			ARROWS.push({to: parse.idnum, from: v.idnum});
 		});
+		var contexts = parse.definition.access.map(statementContext);
+		// If there's more than one...
+		var unique = true;
+		for (var i = 0; i < contexts.length; i++) {
+			for (var j = 0; j < i; j++) {
+				if (contexts[i] !== contexts[j]) {
+					unique = false;
+				}
+			}
+		}
 		if (parse.name.replace(/_+/g, "") === "") {
 			for (var i = 0; i < parse.reads.length; i++) {
 				warn("Use of placeholder <code>" + parse.name + "</code>",
@@ -283,7 +337,9 @@ function variableCheck(parse) {
 					parse.reads[i]);
 			}
 		} else if (!parse.mayIgnore && parse.reads.length === 0) {
-			error("Unused assignment", "This assignment to <code>" + parse.name + "</code> was never used. Did you forget to use it?", parse);
+			if (unique) {
+				error("Unused assignment", "This assignment to <code>" + parse.name + "</code> was never used. Did you forget to use it?", parse);
+			}
 		}
 	}
 }
@@ -294,8 +350,8 @@ function variableStage(parse) {
 	var context = {variables: new VariableContext()};
 	variablePass(parse, context);
 	context.variables.finish();
-	lprecurse(parse, variableCheck);
-	//lprecurse(parse, variableProcess, variablePre, variablePost, context);
+	lprecurse(parse, variableProcess);
+	lprecurse(parse, variableCheck, null, null, context);
 }
 
 var OPENER = [

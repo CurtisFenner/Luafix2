@@ -1,5 +1,2 @@
-- Investigate why 'unused assignments' warning is triggered by variable in closure but 'used in closure' message is not generated (24 March 2016)
 - Add warning about same 'if' or 'for' in every branch of an 'if' (24 March 2016)
-- Suppress warnings about unused variables if a global with the name has been defined
-- Suppress warnings about unused assignments if the variable is used in more than one function scope
 - Investigate improving performance of merge() in variables.js
