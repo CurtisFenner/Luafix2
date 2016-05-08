@@ -61,8 +61,57 @@ function intersect(a, b) {
 	return c;
 }
 
+function expressionFlipped(a, b) {
+	console.log(show(a), show(b));
+	if (a.type === 'BinaryExpression' && b.type === 'BinaryExpression') {
+		var opposites = {
+			'==': '~=',
+			'~=': '==',
+			'<': '>=',
+			'>': '<=',
+			'>=': '<',
+			'<=': '>'
+		};
+		var flips = {
+			'<': '>',
+			'>': '<',
+			'>=': '<=',
+			'<=': '>=',
+			'==': '==',
+			'~=': '~=',
+		};
+		if (opposites[a.operator] === b.operator) {
+			if (show(a.left) === show(b.left) && show(a.right) === show(b.right)) {
+				return true;
+			}
+		}
+		if (opposites[a.operator] === flips[b.operator]) {
+			if (show(a.left) === show(b.right) && show(a.right) === show(b.left)) {
+				return true;
+			}
+		}
+	}
+	if (a.type === 'UnaryExpression' && a.operator === 'not') {
+		return show(a.argument) === show(b);
+	}
+	if (b.type === 'UnaryExpression' && b.operator === 'not') {
+		return show(b.argument) === show(a);
+	}
+}
+
+function checkBadConditionFlip(a, b) {
+	if (expressionFlipped(a.condition, b.condition)) {
+		warn("Condition flipped instead of using <code>else</code>",
+			"Instead of inverting <code>" + show(a.condition) + "</code>, consider using <code>else</code> here.",
+			b.condition);
+	}
+}
+
 // Warn if the same clause appears in two successive if statements
 function successiveIfs(a, b) {
+	// Warn about negated consecutive ifs
+	checkBadConditionFlip(a.clauses[0], b.clauses[0]);
+	//
 	var ca = booleanClauses(a.clauses[0].condition);
 	for (var i = 1; i < a.clauses.length; i++) {
 		if (a.clauses[i].condition) {
@@ -85,6 +134,11 @@ function successiveIfs(a, b) {
 }
 
 function successiveIfComplaints(t) {
+	if (t.clauses && t.clauses.length >= 2) {
+		if (t.clauses[1].condition) {
+			checkBadConditionFlip(t.clauses[0], t.clauses[1]);
+		}
+	}
 	if (t.body) {
 		for (var i = 0; i < t.body.length - 1; i++) {
 			if (t.body[i].type === "IfStatement" && t.body[i+1].type === "IfStatement") {
