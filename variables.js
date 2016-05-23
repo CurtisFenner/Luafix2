@@ -1,5 +1,11 @@
 'use strict';
 
+function assert(value, string) {
+	if (!value) {
+		throw string;
+	}
+}
+
 function Variable(name) {
 	if (!name) {
 		throw "invalid name";
@@ -50,6 +56,7 @@ Variable.prototype.read = function read(source) {
 };
 
 Variable.prototype.merged = function merged(other) {
+	assert(other, "other must be defined");
 	if (this.name !== other.name) {
 		throw "cannot merge variables with different names: " + this.name + "/" + other.name;
 	}
@@ -218,7 +225,18 @@ VariableContext.prototype.merged = function merged(otherContext) {
 	for (var global in this.globals) {
 		var here = this.globals[global];
 		var there = otherContext.globals[global];
-		r.globals[global] = here.merged(there);
+		if (!there) {
+			r.globals[global] = here;
+			warn("Suspicious use of globals", "The assignment of <code>" + global + "</code> is conditional.");
+		} else {
+			r.globals[global] = here.merged(there);
+		}
+	}
+	for (var global in otherContext.globals) {
+		if (!r.globals[global]) {
+			warn("Suspicious use of globals", "The assignment of <code>" + global + "</code> is conditional.");
+			r.globals[global] = otherContext.globals[global];
+		}
 	}
 	for (var i = 0; i < this.stack.length; i++) {
 		r.stack[i] = [];
