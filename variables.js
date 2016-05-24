@@ -596,6 +596,7 @@ function variablePass(parse, context) {
 	case 'StringCallExpression':
 		variablePass(parse.base, context);
 		variablePass(parse.argument, context);
+		break;
 	case 'CallExpression':
 		variablePass(parse.base, context);
 		for (var i = 0; i < parse.arguments.length; i++) {
