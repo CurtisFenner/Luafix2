@@ -127,8 +127,8 @@ function luafix2() {
 	try {
 		var parse = luaparse.parse(source);
 	} catch (e) {
-		info("LuaFix could not run because the input was not syntactically valid.");
 		error(e);
+		info("LuaFix could not run because the input was not syntactically valid.");
 		return;
 	}
 	// Descend through parse
