@@ -107,6 +107,13 @@ function sString(s) {
 	return s;
 }
 
+function pshow(t) {
+	if (t.type === "FunctionDeclaration" || t.type.indexOf("Literal") >= 0) {
+		return "(" + show(t) + ")";
+	}
+	return show(t);
+}
+
 // tree: tree to show
 // pp: parent precedence (number | undefined -> Infinity)
 function showTree(tree, pp) {
@@ -165,11 +172,11 @@ function showTree(tree, pp) {
 	} else if (tree.type === "CallStatement") {
 		return show(tree.expression) + ";";
 	} else if (tree.type === "CallExpression") {
-		return show(tree.base) + "(" + showTree(tree.arguments).join(", ") + ")";
+		return pshow(tree.base) + "(" + showTree(tree.arguments).join(", ") + ")";
 	} else if (tree.type === "TableCallExpression") {
-		return show(tree.base) + " " + show(tree.arguments); // luaparse has a bug :(
+		return pshow(tree.base) + " " + show(tree.arguments); // luaparse has a bug :(
 	} else if (tree.type === "StringCallExpression") {
-		return show(tree.base) + " " + show(tree.argument);
+		return pshow(tree.base) + " " + show(tree.argument);
 	} else if (tree.type === "FunctionDeclaration") {
 		var s = sKey("function");
 		if (tree.isLocal) {
@@ -201,9 +208,9 @@ function showTree(tree, pp) {
 	} else if (tree.type === "ElseClause") {
 		return sKey("else") + body(tree.body);
 	} else if (tree.type === "MemberExpression") {
-		return show(tree.base, -1/0) + tree.indexer + show(tree.identifier);
+		return pshow(tree.base, -1/0) + tree.indexer + show(tree.identifier);
 	} else if (tree.type === "IndexExpression") {
-		return show(tree.base, -1/0) + "[" + show(tree.index) + "]";
+		return pshow(tree.base, -1/0) + "[" + show(tree.index) + "]";
 	} else if (tree.type === "TableConstructorExpression") {
 		if (tree.fields.length) {
 			var s = tab( showTree(tree.fields).join(",\n") );
