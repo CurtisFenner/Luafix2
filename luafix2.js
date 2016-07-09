@@ -1,14 +1,3 @@
-
-
-String.prototype.count = function(reg) {
-	return (this.match(reg) || []).length;
-}
-
-function stackTrace() {
-	var err = new Error();
-	return err.stack;
-}
-
 var messageCache = {};
 function clear() {
 	messageCache = {};
@@ -86,8 +75,6 @@ function literalCallComplain(tree) {
 	}
 }
 
-
-
 function styleStage(parse, source) {
 	message("LuaFix started", source.length + " bytes processed", "info", false);
 	// Count different elements:
@@ -106,12 +93,9 @@ function styleStage(parse, source) {
 	lprecurse(parse, literalCallComplain);
 }
 
-
-
 function codeReuseStage(parse) {
 	findRepetition(parse);
 }
-
 
 function magicStage(parse) {
 	lprecurse(parse, magicFinder, false, false, {});

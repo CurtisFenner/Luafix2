@@ -12,6 +12,14 @@ Array.prototype.peek = function() {
 	return this[this.length - 1];
 }
 
+String.prototype.count = function(reg) {
+	return (this.match(reg) || []).length;
+}
+
+function stackTrace() {
+	var err = new Error();
+	return err.stack;
+}
 
 function assert(b, m) {
 	if (!b) {
@@ -22,8 +30,8 @@ function assert(b, m) {
 // Compute the edit distance between the two given strings
 // (Source: https://gist.github.com/andrei-m/982927 under MIT license)
 function getEditDistance(a, b) {
-	if(a.length === 0) return b.length; 
-	if(b.length === 0) return a.length; 
+	if(a.length === 0) return b.length;
+	if(b.length === 0) return a.length;
 	var matrix = [];
 	// increment along the first column of each row
 	var i;
