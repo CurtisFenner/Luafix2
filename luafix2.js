@@ -1,12 +1,4 @@
-var messageCache = {};
-function clear() {
-	messageCache = {};
-	document.getElementById("report").innerHTML = "";
-	document.getElementById("post").innerHTML = "";
-}
-
 function message(strong, message, type, tree) {
-	var serial = strong + ">>" + message + ">>" + type;
 	if (!tree) {
 		//if (tree !== false)
 		//	console.log("No tree given to message\n", stackTrace());
@@ -23,23 +15,7 @@ function message(strong, message, type, tree) {
 			tree.problems.push({type: type, message: message, title: strong});
 		}
 	}
-	if (messageCache[serial]) {
-		var qty = messageCache[serial];
-		qty.innerHTML = qty.innerHTML * 1 + 1;
-		qty.style.color = "initial";
-	} else {
-		var w = document.createElement("div");
-		w.className = type;
-		var qty = document.createElement("div");
-		qty.className = "quantity";
-		qty.innerHTML = "1";
-		messageCache[serial] = qty;
-		w.appendChild(qty);
-		var m = document.createElement("span");
-		m.innerHTML = "<strong>" + strong + "</strong> " + message;
-		w.appendChild(m);
-		document.getElementById("report").appendChild(w);
-	}
+	writeLine(strong, message, type);
 }
 
 var warnCount = 0;
@@ -101,11 +77,10 @@ function magicStage(parse) {
 	lprecurse(parse, magicFinder, false, false, {});
 }
 
-function luafix2() {
+function luafix2(source) {
 	HoverProblems = {}; // Reset list of problems
 	warnCount = 0;
 	errorCount = 0;
-	var source = document.getElementById("source").value;
 	clear();
 	showMode("escape");
 	try {
@@ -133,7 +108,7 @@ function luafix2() {
 	// 5) Specific anti-pattern search
 	showMode("html");
 	showAnnotate = highlightProblems;
-	document.getElementById("post").innerHTML = show( parse );
+	showInput(parse);
 	//
 	showAnnotate = suggestSolutions;
 	var sug = show(parse);
@@ -143,5 +118,3 @@ function luafix2() {
 	//showArrows(ARROWS);
 	SetupHoverables();
 }
-
-document.getElementById("checkbutton").onclick = luafix2;
