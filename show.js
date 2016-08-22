@@ -21,6 +21,8 @@ precedence["and"] = 6;
 ambiguous[7] = true;
 precedence["or"] = 7; // cheat?
 
+////////////////////////////////////////////////////////////////////////////////
+
 function arrowHead(t, x, y, dx, dy) {
 	var C = [x, y];
 	var A = [x - dx * 10 - dy * 5, y - dy * 10 + dx * 5];
@@ -275,6 +277,11 @@ function spanner(c) {
 	return wrapper("<span class='" + c +"'>", "</span>");
 }
 
+function PlainHTMLShower() {
+}
+PlainHTMLShower.prototype.show = function plainShow() {
+	return "((CODE))";
+};
 
 function showMode(mode) {
 	if (mode === "html") {
@@ -352,3 +359,15 @@ function suggestSolutions(text, tree) {
 		return text;
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+function JSONShower() {
+}
+JSONShower.prototype.show = function(x) {
+	return x + ""; // TODO...
+};
+
+module.exports = {};
+module.exports.PlainHTMLShower = PlainHTMLShower;
+module.exports.JSONShower = JSONShower;

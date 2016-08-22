@@ -1,8 +1,15 @@
+var lprecurse = require("./lphelp.js").lprecurse;
+var show = require("./show.js");
+
+function repetitionKey(tree) {
+	return new show.JSONShower().show(tree);
+}
+
 function observe(tree, data) {
 	if (tree.type == "Chunk") {
 		return;
 	}
-	var key = show(tree);
+	var key = repetitionKey(tree);
 	data[key] = data[key] || [];
 	data[key].push(tree);
 }
@@ -33,15 +40,15 @@ function findUnconditional(tree) {
 	// see if all of the clauses have the same ending statement.
 	if (tree.type === "ElseClause") {
 		if (tree.body.length == 0) {
-			error("Empty body in <code>else</code>",
+			tree.error("Empty body in <code>else</code>",
 				"If nothing will happen when the conditions aren't meant, " +
 				"there is no purpose in including an <code>else</code> clause " +
-				"at all.", tree);
-				tree.suggestion = {type:"Chunk", body:[{type:"Comment", text:"Removed `else`"}]};
+				"at all.");
+			tree.suggestion = {type:"Chunk", body:[{type:"Comment", text:"Removed `else`"}]};
 		} else if (tree.body.length === 1 && tree.body[0].type === "IfStatement") {
-			warn("Use of <code>else if .... end end</code> instead of " +
+			tree.body[0].clauses[0].condition.warn("Use of <code>else if .... end end</code> instead of " +
 				"<code>elseif end</code>", "You can save levels of indentation "
-				+ "and an <code>end</code> by using <code>elseif</code>", tree.body[0].clauses[0].condition);
+				+ "and an <code>end</code> by using <code>elseif</code>");
 			var clausy = tree.body[0].clauses;
 			var suggestion = {type: "IfStatement"};
 			var c = [];
@@ -68,9 +75,9 @@ function findUnconditional(tree) {
 		for (var i = 0; i < clauses.length; i++) {
 			if (clauses[i].body.length) {
 				// Non-empty body
-				var s = show(clauses[i].body.peek());
+				var s = repetitionKey(clauses[i].body.peek());
 				if (!seen.contains(s)) {
-					ends.push({key:s, tree:clauses[i].body.peek()});
+					ends.push({key:s, tree: clauses[i].body.peek()});
 				}
 			}
 		}
@@ -80,25 +87,24 @@ function findUnconditional(tree) {
 				if (clauses[i].body.length) {
 					// Non-empty body.
 					var last = clauses[i].body.peek();
-					if (show(last) === ends[j].key) {
+					if (repetitionKey(last) === ends[j].key) {
 						count++;
 					}
 				}
 			}
 			if (count === clauses.length) {
 				if (clauses.peek().type === "ElseClause") {
-					error("Repetition of <code>" + ends[j].key + "</code> in " +
+					ends[j].tree.error("Repetition of <code>" + ends[j].key + "</code> in " +
 						"every <code>elseif</code> and <code>else</code>",
 						"You include this code "
 						+ "in every branch&mdash;it will always happen."
 						+ "You should move " +
 						"this code to be <em>after</em> the final " +
 						"<code>end</code> of this <code>if</code>." +
-						"<b><a href=example/elseifs.html>Example Code</a></b>",
-						ends[j].tree);
+						"<b><a href=example/elseifs.html>Example Code</a></b>");
 					// TODO: "SUGGESTION NEEDED IN REDUNDANT FOR ELSE CLAUSE CERTAINY")
 				} else {
-					warn("Repetition of <code>" + ends[j].key + "</code> in " +
+					ends[j].tree.warn("Repetition of <code>" + ends[j].key + "</code> in " +
 						"every <code>elseif</code>", "You include this code "
 						+ "in every branch, but don't provide an " +
 						"<code>else</code>. If these case <em>are</em> meant " +
@@ -109,57 +115,19 @@ function findUnconditional(tree) {
 						"<code>end</code>. If not exhaustive, you can still " +
 						"add it after by checking that <em>any</em> " +
 						"<code>elseif</code> would happen. " +
-						"<b><a href=example/elseifs.html>Example Code</a></b>",
-						ends[j].tree);
+						"<b><a href=example/elseifs.html>Example Code</a></b>");
 				}
 			} else if (count >= clauses.length * 0.74) {
-					warn("Repetition of <code>" + ends[j].key + "</code> in " +
+					ends[j].tree.warn("Repetition of <code>" + ends[j].key + "</code> in " +
 						"most <code>elseif</code> branches", "You include this "
 						+ "code many times (but not always). It probably makes "
 						+ "sense to break the <code>if</code> based on this " +
 						"code repetition. See " +
-						"<b><a href=example/elseifs.html>Example Code</a></b>",
-						ends[j].tree);
+						"<b><a href=example/elseifs.html>Example Code</a></b>");
 			}
 		}
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/*
-function addWeight(tree, to) {
-	if (tree.type === "IndexExpression") {
-		to.number++;
-	}
-	to.number++;
-}
-
-function weight(tree) {
-	var count = {number: 0};
-	lprecurse(tree, addWeight, null, null, count);
-	return count.number;
-}
-
-function repObserve(tree, countsweights) {
-	var counts = countsweights[0];
-	var weights = countsweights[1];
-	var k = show(tree);
-	counts[k] = (counts[k] || 0) + 1;
-	weights[k] = weight(tree);
-}
-
-function findRepetition(tree) {
-	var counts = {};
-	var weights = {};
-	lprecurse(tree, repObserve, null, null, [counts, weights]);
-	for (k in counts) {
-		if (counts[k] * weights[k] >= 15 && weights[k] > 2 && counts[k] > 2) {
-			// Intervention required.
-			warn("Excessive repetition in code: <code>" + k + "</code>",
-				"You should consider using variables or functions to avoid "
-				+ "code that repeats itself. Code that repeats itself becomes "
-				+ "harder to change and understand, and is longer than it "
-				+ "needs to be.");
-		}
-	}
-}*/
+module.exports = {};
+module.exports.findRepetition = findRepetition;

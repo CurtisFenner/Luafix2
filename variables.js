@@ -1,5 +1,7 @@
 'use strict';
 
+var lprecurse = require("./lphelp.js").lprecurse;
+
 function assert(value, string) {
 	if (!value) {
 		throw string;
@@ -82,7 +84,7 @@ function builtin(name) {
 	return x;
 }
 
-function VariableContext() {
+function VariableContext(options) {
 	this.globals = {
 		math: builtin("math"),
 		print: builtin("print"),
@@ -105,7 +107,9 @@ function VariableContext() {
 	for (var i = 0; i < builtins.length; i++) {
 		this.globals[ builtins[i] ] = builtin(builtins[i]);
 	}
-	if (USE_ROBLOX) {
+	// TODO: make this work
+	/*
+	if (options.USE_ROBLOX) {
 		delete this.globals.os;
 		delete this.globals.io;
 		delete this.globals.debug;
@@ -126,6 +130,7 @@ function VariableContext() {
 			this.globals[builtins[i]] = builtin(builtins[i]);
 		}
 	}
+	*/
 	this.stack = [[]];
 }
 
@@ -334,9 +339,6 @@ function variableCheck(parse, context) {
 	}
 	if (parse.definition) {
 		//info(parse.idnum, parse.type, parse);
-		parse.reads.map(function(v) {
-			ARROWS.push({to: parse.idnum, from: v.idnum});
-		});
 		var contexts = parse.definition.access.map(statementContext);
 		// If there's more than one...
 		var unique = true;
@@ -349,22 +351,19 @@ function variableCheck(parse, context) {
 		}
 		if (parse.name.replace(/_+/g, "") === "") {
 			for (var i = 0; i < parse.reads.length; i++) {
-				warn("Use of placeholder <code>" + parse.name + "</code>",
+				parse.reads[i].warn("Use of placeholder <code>" + parse.name + "</code>",
 					"This value was not given a name. Usually, <code>" +
-					parse.name + "</code> is reserved for values that will not be used.",
-					parse.reads[i]);
+					parse.name + "</code> is reserved for values that will not be used.");
 			}
 		} else if (!parse.mayIgnore && parse.reads.length === 0) {
 			if (unique) {
-				error("Unused assignment", "This assignment to <code>" + parse.name + "</code> was never used. Did you forget to use it?", parse);
+				parse.error("Unused assignment", "This assignment to <code>" + parse.name + "</code> was never used. Did you forget to use it?");
 			}
 		}
 	}
 }
 
-var ARROWS = [];
-function variableStage(parse) {
-	ARROWS = [];
+function variableStage(parse, options) {
 	var context = {variables: new VariableContext()};
 	variablePass(parse, context);
 	context.variables.finish();
@@ -627,3 +626,5 @@ function variablePass(parse, context) {
 		implementation("variablePass cannot respond to <code>" + parse.type + "</code>", "", parse);
 	}
 }
+
+module.exports = variableStage;

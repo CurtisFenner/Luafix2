@@ -1,43 +1,65 @@
-function message(strong, message, type, tree) {
-	if (!tree) {
-		//if (tree !== false)
-		//	console.log("No tree given to message\n", stackTrace());
-	} else {
-		tree.problems = tree.problems || [];
-		var add = true;
-		for (var i = 0; i < tree.problems.length; i++) {
-			if (tree.problems[i].message == message &&
-				tree.problems[i].title == strong) {
-				add = false;
-			}
-		}
-		if (add) {
-			tree.problems.push({type: type, message: message, title: strong});
+"use strict";
+
+var luaparse = require("./luaparse.js");
+var variableStage = require("./variables.js");
+var findRepetition = require("./redundant.js").findRepetition;
+var antipatternStage = require("./antipatterns.js");
+var magicStage = require("./magic.js");
+
+function Reportable(object, root) {
+	if (object instanceof Array) {
+		return object.map(x => Reportable(x, root));
+	}
+	if (typeof object != typeof {}) {
+		return object;
+	}
+	return new OReportable(object, root);
+}
+
+// Represents an AST with reporting methods .info, .warn, .error, and
+// .implementation
+function OReportable(object, root) {
+	for (var p in object) {
+		this[p] = Reportable(object[p], root);
+	}
+	this.root = root;
+	this.problems = [];
+	if (!this.type) {
+		throw "invalid object " + JSON.stringify(object);
+	}
+}
+
+OReportable.prototype.message = function message(strong, message, type) {
+	var add = true;
+	for (var i = 0; i < this.problems.length; i++) {
+		if (this.problems[i].message == message &&
+			this.problems[i].title == strong) {
+			add = false;
 		}
 	}
-	writeLine(strong, message, type);
+	if (add) {
+		this.problems.push({type: type, message: message, title: strong});
+		this.root.push({type: type, message: message, title: strong, tree: this});
+	}
 }
 
-var warnCount = 0;
-var errorCount = 0;
-function warn(strong, msg, tree) {
-	warnCount++;
-	message(strong, msg || "", "warning", tree);
+OReportable.prototype.warn = function warn(strong, msg) {
+	this.message(strong, msg || "", "warning");
 }
 
-function error(strong, msg, tree) {
-	errorCount++;
-	message(strong, msg || "", "error", tree);
+OReportable.prototype.error = function error(strong, msg) {
+	this.message(strong, msg || "", "error");
 }
 
-function info(strong, msg, tree) {
-	message(strong, msg || "", "info", tree);
+OReportable.prototype.info = function info(strong, msg) {
+	this.message(strong, msg || "", "info");
 }
 
-function implementation(strong, msg, tree) {
-	message(strong, msg || "", "implementation", tree);
+OReportable.prototype.implementation = function implementation(strong, msg) {
+	this.message(strong, msg || "", "implementation");
 }
 
+/// XXX: move this function elsewhere (it's currently unused)
 function literalCallComplain(tree) {
 	if (tree.type == "StringCallExpression") {
 		warn("Use of string-call-expression",
@@ -51,70 +73,48 @@ function literalCallComplain(tree) {
 	}
 }
 
-function styleStage(parse, source) {
-	message("LuaFix started", source.length + " bytes processed", "info", false);
-	// Count different elements:
-	var spacedBefore = source.count(/\s[-+*\/=.^~<>]/g)
-	var spacedAfter = source.count(/[-+*\/=.^~<>]\s/g)
-	var operators = source.count(/[-+*\/=.^~<>]/g);
-	var doubles = source.count(/[><=~]=/g) + source.count(/\.\./g);
-	var unspaced = operators - doubles - (spacedBefore + spacedAfter) / 2
-	if (unspaced == 0) {
-		//info("Good spacing around operators", "");
-	} else {
-		//warn("Place spaces around operators",
-		//	Math.ceil(unspaced) + " operators without spaces");
-	}
-	// Find table calls / string calls.
-	lprecurse(parse, literalCallComplain);
+function codeReuseStage(result, parse) {
+	findRepetition(result, parse);
 }
 
-function codeReuseStage(parse) {
-	findRepetition(parse);
-}
-
-function magicStage(parse) {
-	lprecurse(parse, magicFinder, false, false, {});
-}
-
-function luafix2(source) {
-	HoverProblems = {}; // Reset list of problems
-	warnCount = 0;
-	errorCount = 0;
-	clear();
-	showMode("escape");
+function luafix2(source, options) {
 	try {
 		var parse = luaparse.parse(source);
 	} catch (e) {
-		error(e);
-		info("LuaFix could not run because the input was not syntactically valid.");
+		// TODO: deal with this
+		console.log("parser error", e);
+		//error(e);
+		//info("LuaFix could not run because the input was not syntactically valid.");
 		return;
 	}
+	var root = [
+		{type:"info", tree: false, strong: "LuaFix started", message: source.length + " bytes processed"},
+	];
+	var result = Reportable(parse, root);
 	// Descend through parse
-	styleStage(parse, source);
-	variableStage(parse);
-	codeReuseStage(parse, source);
-	antipatternStage(parse, source);
-	magicStage(parse, source);
-	nameStage(parse);
-	info("LuaFix finished.", "<strong>" + errorCount +
-		"</strong> errors and <strong>" +
-		warnCount + "</strong> warnings.", false);
+	variableStage(result, options);
+	codeReuseStage(result, options);
+	antipatternStage(result, options);
+	magicStage(result, options);
+	var errorCount = "TODO";
+	var warnCount = "TODO";
+	root.push({
+		type:"info",
+		tree: false,
+		strong: "LuaFix finished",
+		message: "<strong>" + errorCount + "</strong> errors and <strong>" + warnCount + "</strong> warnings.",
+	});
 	// Stages:
 	// 1) Style (without full parse)
 	// 2) Style warnings requiring parse
 	// 3) Variable type checking / side effects / use
 	// 4) Code reuse check
 	// 5) Specific anti-pattern search
-	showMode("html");
-	showAnnotate = highlightProblems;
-	showInput(parse);
-	//
-	showAnnotate = suggestSolutions;
-	var sug = show(parse);
-	//
-	showMode("bare");
-	showAnnotate = identity;
+	//document.getElementById("post").innerHTML = show(parse);
+
 	//showArrows(ARROWS);
-	SetupHoverables();
+	//SetupHoverables();
+	return root;
 }
+
+module.exports = luafix2;

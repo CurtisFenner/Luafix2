@@ -16,12 +16,12 @@ String.prototype.count = function(reg) {
 	return (this.match(reg) || []).length;
 }
 
-function stackTrace() {
+module.exports.stackTrace = function stackTrace() {
 	var err = new Error();
 	return err.stack;
 }
 
-function assert(b, m) {
+module.exports.assert = function assert(b, m) {
 	if (!b) {
 		throw m;
 	}
@@ -29,7 +29,7 @@ function assert(b, m) {
 
 // Compute the edit distance between the two given strings
 // (Source: https://gist.github.com/andrei-m/982927 under MIT license)
-function getEditDistance(a, b) {
+module.exports.getEditDistance = function getEditDistance(a, b) {
 	if(a.length === 0) return b.length;
 	if(b.length === 0) return a.length;
 	var matrix = [];
@@ -70,7 +70,7 @@ String.prototype.closest = function(others) {
 	});
 }
 
-function wrappedList(list, pre, post, conj) {
+module.exports.wrappedList = function wrappedList(list, pre, post, conj) {
 	if (list.length === 0) {
 		return "(no options)";
 	}

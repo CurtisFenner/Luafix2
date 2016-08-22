@@ -38,7 +38,7 @@ function processIdentifier(iden) {
 	}
 }
 
-function nameStage(parse) {
+function nameStage(parse, options) {
 	lprecurse(parse, function(tree) {
 		if (tree.type === "Identifier") {
 			processIdentifier(tree);

@@ -1,3 +1,11 @@
+"use strict";
+
+var lprecurse = require("./lphelp.js").lprecurse;
+
+function magicStage(result, parse) {
+	lprecurse(parse, magicFinder, false, false, {});
+}
+
 function magicFinder(tree, sofar) {
 	var okay = ["1", "2", "0", "3", "4", "-1", "-2", "0.5", "10", "", ".5"];
 	var care;
@@ -34,3 +42,5 @@ function magicFinder(tree, sofar) {
 		}
 	}
 }
+
+module.exports = magicStage;

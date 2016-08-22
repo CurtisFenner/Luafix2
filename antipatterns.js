@@ -1,7 +1,14 @@
-function antipatternStage(parse) {
+"use strict";
+
+var lprecurse = require("./lphelp.js").lprecurse;
+var PlainHTMLShower = require("./show.js").PlainHTMLShower;
+
+function antipatternStage(parse, options) {
 	// Find `x ~= nil`
 	lprecurse(parse, antiTruthyCompare, antiTruthyPre, antiTruthyPost, []);
-	lprecurse(parse, antiFFCDot);
+	if (options.USE_ROBLOX) {
+		lprecurse(parse, antiFFCDot);
+	}
 	lprecurse(parse, searchBadCondition);
 	lprecurse(parse, badComparisons);
 	lprecurse(parse, badNot);
@@ -512,9 +519,13 @@ function searchBadCondition(tree) {
 				// TODO: account for breaks & returns
 			}
 			if (!okay || warning) {
-				var f = warning ? warn : error;
-				f("Constant used as condition", "The value <code>" + show(tree.condition) + "</code> is always " +
-					(isTruthy(tree.condition) ? "truthy" : "falsey"), tree.condition);
+				var heading = "Constant used as condition";
+				var body = "The value <code>" + new PlainHTMLShower().show(tree.condition) + "</code> is always " + (isTruthy(tree.condition) ? "truthy" : "falsey");
+				if (warning) {
+					tree.condition.warn(heading, body);
+				} else {
+					tree.condition.error(heading, body);
+				}
 			}
 		}
 		checkBadCondition(tree.condition, true);
@@ -580,9 +591,6 @@ function antiTruthyCompare(tree, context) {
 
 // Complain about indexing a FindFirstChild with only one parameter.
 function antiFFCDot(tree) {
-	if (!USE_ROBLOX) {
-		return;
-	}
 	if (tree.type === "MemberExpression") {
 		if (tree.base.type === "CallExpression"
 			&& tree.base.base.type === "MemberExpression"
@@ -607,3 +615,5 @@ function antiFFCDot(tree) {
 		}
 	}
 }
+
+module.exports = antipatternStage;

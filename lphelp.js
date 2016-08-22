@@ -204,3 +204,6 @@ function difference(a, b) {
 	}
 	return t;
 }
+
+module.exports = {};
+module.exports.lprecurse = lprecurse;
