@@ -96,8 +96,9 @@ function luafix2(source, options) {
 	codeReuseStage(result, options);
 	antipatternStage(result, options);
 	magicStage(result, options);
-	var errorCount = "TODO";
-	var warnCount = "TODO";
+
+	var errorCount = root.filter(x => x.type == "error").length;
+	var warnCount = root.filter(x => x.type == "warning").length;
 	root.push({
 		type:"info",
 		tree: false,
