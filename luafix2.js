@@ -73,7 +73,7 @@ function literalCallComplain(tree) {
 	}
 }
 
-function luafix2(source, options) {
+function luafix(source, options) {
 	try {
 		var parse = luaparse.parse(source);
 	} catch (e) {
@@ -111,7 +111,10 @@ function luafix2(source, options) {
 
 	//showArrows(ARROWS);
 	//SetupHoverables();
-	return root;
+	return {
+		output: root,
+		parse: parse
+	};
 }
 
-module.exports.luafix = luafix2;
+module.exports.luafix = luafix;

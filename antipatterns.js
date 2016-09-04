@@ -1,24 +1,24 @@
 "use strict";
 
-var lprecurse = require("./lphelp.js").lprecurse;
+let lphelp = require("./lphelp.js");
 var PlainHTMLShower = require("./show.js").PlainHTMLShower;
 
 function antipatternStage(parse, options) {
 	// Find `x ~= nil`
-	lprecurse(parse, antiTruthyCompare, antiTruthyPre, antiTruthyPost, []);
+	lphelp.recurse(parse, antiTruthyCompare, antiTruthyPre, antiTruthyPost, []);
 	if (options.USE_ROBLOX) {
-		lprecurse(parse, antiFFCDot);
+		lphelp.recurse(parse, antiFFCDot);
 	}
-	lprecurse(parse, searchBadCondition);
-	lprecurse(parse, badComparisons);
-	lprecurse(parse, badNot);
-	lprecurse(parse, badLoop);
-	lprecurse(parse, badRepeat);
-	lprecurse(parse, badAssignment);
-	lprecurse(parse, badIndex);
-	lprecurse(parse, endingUnderscore);
-	lprecurse(parse, successiveIfComplaints);
-	lprecurse(parse, complainReturnNil);
+	lphelp.recurse(parse, searchBadCondition);
+	lphelp.recurse(parse, badComparisons);
+	lphelp.recurse(parse, badNot);
+	lphelp.recurse(parse, badLoop);
+	lphelp.recurse(parse, badRepeat);
+	lphelp.recurse(parse, badAssignment);
+	lphelp.recurse(parse, badIndex);
+	lphelp.recurse(parse, endingUnderscore);
+	lphelp.recurse(parse, successiveIfComplaints);
+	lphelp.recurse(parse, complainReturnNil);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

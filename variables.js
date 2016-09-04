@@ -1,6 +1,6 @@
 'use strict';
-
-var lprecurse = require("./lphelp.js").lprecurse;
+{
+let lphelp = require("./lphelp.js");
 
 function assert(value, string) {
 	if (!value) {
@@ -367,8 +367,8 @@ function variableStage(parse, options) {
 	var context = {variables: new VariableContext()};
 	variablePass(parse, context);
 	context.variables.finish();
-	lprecurse(parse, variableProcess);
-	lprecurse(parse, variableCheck, null, null, context);
+	lphelp.recurse(parse, variableProcess);
+	lphelp.recurse(parse, variableCheck, null, null, context);
 }
 
 var OPENER = [
@@ -628,3 +628,4 @@ function variablePass(parse, context) {
 }
 
 module.exports.lint = variableStage;
+}

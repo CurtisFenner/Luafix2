@@ -19,6 +19,12 @@
 	}
 	let map = {};
 	function require(name) {
+		if (name.substr(0, 2) !== "./") {
+			throw new Error("Glue.js requires only requires in this directory");
+		}
+		if (name.substr(-3) !== ".js") {
+			throw new Error("Glue.js requires `.js` endings on requires");
+		}
 		if (map[name] === undefined) {
 			map[name] = {}
 		}
@@ -30,5 +36,6 @@
 			map[name] = {}
 		}
 		exp = map[name];
+		let u = exp;
 	}
 }

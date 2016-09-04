@@ -1,12 +1,12 @@
 "use strict";
 
-var isLoop = {}
+let isLoop = {}
 isLoop.ForNumericStatement = true;
 isLoop.WhileStatement = true;
 isLoop.ForGenericStatement = true;
 isLoop.RepeatStatement = true;
 
-var doNormal = {};
+let doNormal = {};
 doNormal.VarargLiteral = [];
 doNormal.TableKey = ["key", "value"];
 doNormal.TableKeyString = ["value"];
@@ -45,7 +45,7 @@ doNormal.IfClause = ["condition", "body"];
 doNormal.ElseifClause = doNormal.IfClause;
 doNormal.ElseClause = ["body"];
 
-var isBottom = {};
+let isBottom = {};
 isBottom.Identifier = true;
 isBottom.NumericLiteral = true;
 isBottom.StringLiteral = true;
@@ -173,7 +173,7 @@ function lprecurse(tree, fun, pre, post, arg) {
 			post(tree, arg);
 		}
 	} else {
-		console.log("Unexpected object", tree, "received in lprecurse");
+		throw new Error("Unexpected object" + JSON.stringify(tree) + "received in lprecurse");
 	}
 }
 
@@ -204,4 +204,4 @@ function difference(a, b) {
 	return t;
 }
 
-module.exports.lprecurse = lprecurse;
+module.exports.recurse = lprecurse;
