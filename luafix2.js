@@ -113,7 +113,7 @@ function luafix(source, options) {
 	//SetupHoverables();
 	return {
 		output: root,
-		parse: parse
+		parse: result,
 	};
 }
 

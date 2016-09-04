@@ -5,29 +5,29 @@ body {
 #report {
 	background:#FAFAFA;
 }
-.post {
+div.code {
 	white-space: pre;
 	font-family: 'ubuntu mono', monospace;
 	font-size: 14px;
 	line-height: 200%;
 	position: relative;
 }
-.post .key {/* keywords */
+div.code .key {/* keywords */
 	font-weight: bold;
 }
-.post .logical { /* and, or, not */
+div.code .logical { /* and, or, not */
 	font-weight: bold;
 	color: #F05;
 }
-.post .keyliteral { /* nil, false, true */
+div.code .keyliteral { /* nil, false, true */
 	font-weight: bold;
 	color: #50F;
 }
-.post .number {
+div.code .number {
 	font-weight: bold;
 	color: #E90;
 }
-.post .string {
+div.code .string {
 	color: #6782D3;
 }
 
