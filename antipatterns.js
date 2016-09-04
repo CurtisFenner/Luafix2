@@ -616,4 +616,4 @@ function antiFFCDot(tree) {
 	}
 }
 
-module.exports = antipatternStage;
+module.exports.lint = antipatternStage;

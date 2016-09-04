@@ -26,54 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // Used under MIT LICENSE from http://oxyc.github.io/luaparse/
 
-
-/* global exports:true, module:true, require:true, define:true, global:true */
-
-(function (root, name, factory) {
-	/* jshint eqeqeq:false */
-	'use strict';
-
-	// Used to determine if values are of the language type `Object`
-	var objectTypes = {
-				'function': true
-			, 'object': true
-		}
-		// Detect free variable `exports`
-		, freeExports = objectTypes[typeof exports] && exports && !exports.nodeType && exports
-		// Detect free variable `module`
-		, freeModule = objectTypes[typeof module] && module && !module.nodeType && module
-		// Detect free variable `global`, from Node.js or Browserified code, and
-		// use it as `window`
-		, freeGlobal = freeExports && freeModule && typeof global == 'object' && global
-		// Detect the popular CommonJS extension `module.exports`
-		, moduleExports = freeModule && freeModule.exports === freeExports && freeExports;
-
-	if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal || freeGlobal.self === freeGlobal)) {
-		root = freeGlobal;
-	}
-
-	// Some AMD build optimizers, like r.js, check for specific condition
-	// patterns like the following:
-	if (typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
-		// defined as an anonymous module.
-		define(['exports'], factory);
-		// In case the source has been processed and wrapped in a define module use
-		// the supplied `exports` object.
-		if (freeExports && moduleExports) factory(freeModule.exports);
-	}
-	// check for `exports` after `define` in case a build optimizer adds an
-	// `exports` object
-	else if (freeExports && freeModule) {
-		// in Node.js or RingoJS v0.8.0+
-		if (moduleExports) factory(freeModule.exports);
-		// in Narwhal or RingoJS v0.7.0-
-		else factory(freeExports);
-	}
-	// in a browser or Rhino
-	else {
-		factory((root[name] = {}));
-	}
-}(this, 'luaparse', function (exports) {
+function defineLuaparse (exports) {
 	'use strict';
 
 	exports.version = '0.1.15';
@@ -2111,5 +2064,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		return chunk;
 	}
 
-}));
-/* vim: set sw=2 ts=2 et tw=79 : */
+}
+
+defineLuaparse(module.exports);

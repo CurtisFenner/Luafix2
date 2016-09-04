@@ -129,5 +129,4 @@ function findUnconditional(tree) {
 	}
 }
 
-module.exports = {};
-module.exports.findRepetition = findRepetition;
+module.exports.lint = findRepetition;

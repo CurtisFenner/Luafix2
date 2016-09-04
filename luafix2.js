@@ -1,10 +1,10 @@
 "use strict";
 
 var luaparse = require("./luaparse.js");
-var variableStage = require("./variables.js");
-var findRepetition = require("./redundant.js").findRepetition;
-var antipatternStage = require("./antipatterns.js");
-var magicStage = require("./magic.js");
+var variables = require("./variables.js");
+var redundant = require("./redundant.js");
+var antipatterns = require("./antipatterns.js");
+var magic = require("./magic.js");
 
 function Reportable(object, root) {
 	if (object instanceof Array) {
@@ -118,4 +118,4 @@ function luafix2(source, options) {
 	return root;
 }
 
-module.exports = luafix2;
+module.exports.luafix = luafix2;

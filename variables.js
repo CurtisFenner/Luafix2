@@ -627,4 +627,4 @@ function variablePass(parse, context) {
 	}
 }
 
-module.exports = variableStage;
+module.exports.lint = variableStage;

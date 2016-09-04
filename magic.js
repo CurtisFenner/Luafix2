@@ -43,4 +43,4 @@ function magicFinder(tree, sofar) {
 	}
 }
 
-module.exports = magicStage;
+module.exports.lint = magicStage;

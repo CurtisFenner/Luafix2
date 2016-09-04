@@ -177,9 +177,7 @@ function lprecurse(tree, fun, pre, post, arg) {
 	}
 }
 
-
-
-
+// Produces the union of two arrays
 function union(a, b) {
 	var t = [];
 	for (var i = 0; i < a.length; i++) {
@@ -195,6 +193,7 @@ function union(a, b) {
 	return t;
 }
 
+// Produces the set subtraction of two arrays
 function difference(a, b) {
 	var t = [];
 	for (var i = 0; i < a.length; i++) {
@@ -205,5 +204,4 @@ function difference(a, b) {
 	return t;
 }
 
-module.exports = {};
 module.exports.lprecurse = lprecurse;
