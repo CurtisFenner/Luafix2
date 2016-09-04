@@ -1,10 +1,10 @@
 "use strict";
 
-var luaparse = require("./luaparse.js");
-var variables = require("./variables.js");
-var redundant = require("./redundant.js");
-var antipatterns = require("./antipatterns.js");
-var magic = require("./magic.js");
+let luaparse = require("./luaparse.js");
+let variables = require("./variables.js");
+let redundant = require("./redundant.js");
+let antipatterns = require("./antipatterns.js");
+let magic = require("./magic.js");
 
 function Reportable(object, root) {
 	if (object instanceof Array) {
@@ -73,10 +73,6 @@ function literalCallComplain(tree) {
 	}
 }
 
-function codeReuseStage(result, parse) {
-	findRepetition(result, parse);
-}
-
 function luafix2(source, options) {
 	try {
 		var parse = luaparse.parse(source);
@@ -92,10 +88,10 @@ function luafix2(source, options) {
 	];
 	var result = Reportable(parse, root);
 	// Descend through parse
-	variableStage(result, options);
-	codeReuseStage(result, options);
-	antipatternStage(result, options);
-	magicStage(result, options);
+	variables.lint(result, options);
+	redundant.lint(result, options);
+	antipatterns.lint(result, options);
+	magic.lint(result, options);
 
 	var errorCount = root.filter(x => x.type == "error").length;
 	var warnCount = root.filter(x => x.type == "warning").length;

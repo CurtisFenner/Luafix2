@@ -1,17 +1,19 @@
-var util = require("./extend.js");
-var luaparse = require("./luaparse.js");
-require("./show.js");
-require("./lphelp.js");
-require("./antipatterns.js");
-require("./magic.js");
-require("./variables.js");
-require("./redundant.js");
-require("./names.js");
+"use strict";
+
+let util = require("./extend.js");
+let luaparse = require("./luaparse.js");
+let show = require("./show.js");
+let lphelp = require("./lphelp.js");
+let antipatterns = require("./antipatterns.js");
+let magic = require("./magic.js");
+let variables = require("./variables.js");
+let redundant = require("./redundant.js");
+let names = require("./names.js");
 
 // main file
-var luafix = require("./luafix2.js");
+let luafix2 = require("./luafix2.js");
 
-console.log(luafix(`
+console.log(luafix2.luafix(`
 local a = 1
 if false then
 	a = 2
