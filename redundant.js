@@ -2,10 +2,10 @@
 {
 
 	let lphelp = require("./lphelp.js");
-	let show = require("./show.js");
+	let htmlshow = require("./htmlshow.js");
 
 	function repetitionKey(tree) {
-		return new show.JSONShower().show(tree);
+		return new htmlshow.HTMLShower().show(tree, "");
 	}
 
 	function observe(tree, data) {
