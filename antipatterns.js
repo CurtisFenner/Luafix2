@@ -312,9 +312,9 @@ function badNot(tree) {
 	}
 	if (tree.type == "UnaryExpression" && tree.operator == "not") {
 		if (isTruthy(tree.argument)) {
-			error("A <code>not</code> of a literal is always <code>false</code>",
+			tree.error("A <code>not</code> of a literal is always <code>false</code>",
 				"Since <code>" + show(tree.argument) +
-				"</code> is truthy, this expression is always <code>false</code>. Did you forget parenthesis?", tree);
+				"</code> is truthy, this expression is always <code>false</code>. Did you forget parenthesis?");
 		}
 	}
 }
