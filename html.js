@@ -1,7 +1,7 @@
 {
 	"use strict";
 	let luafix2 = require("./luafix2.js");
-	let show = require("./show.js");
+	let htmlshow = require("./htmlshow.js");
 
 	document.getElementById("checkbutton").onclick = function() {
 		let options = {
@@ -11,6 +11,6 @@
 			document.getElementById("source").value, options);
 
 		document.getElementById("formatted").innerHTML =
-			new show.PlainHTMLShower().show(results.parse);
+			new htmlshow.HTMLShower().show(results.parse);
 	}
 }
