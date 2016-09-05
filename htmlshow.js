@@ -1,8 +1,8 @@
 "use strict";
 {
 
-	function HTMLShower() {
-		this.x = 5;
+	function HTMLShower(showProblems) {
+		this.showProblems = showProblems;
 	}
 
 	let precedenceTable = [
@@ -54,16 +54,28 @@
 		throw new Error("no operators `" + parent + "` ... `" + child + "`");
 	}
 
+	// works on non-evil input
+	let stripTags = x => x.replace(/<[^>]+>/g, "");
+
 	let spanner = c => x => "<span class=" + c + ">" + x + "</span>";
+	let titler = c => (x, t) => {
+		let escaped = stripTags(t).replace(/"/g, "&quot;");
+		return "<span class=" + c + " title=\"" + escaped + "\">" + x + "</span>";
+	}
 	let span = {
 		keyword: spanner("keyword"),
 		literalKeyword: spanner("literalKeyword"),
 		number: spanner("number"),
 		string: spanner("string"),
 		logical: spanner("logical"),
+		//
+		error: titler("pred"),
+		warning: titler("pyellow"),
+		info: titler("pblue"),
 	};
 
 	let end = "<div class=line>" + span.keyword("end") + "</div>\n";
+
 
 	HTMLShower.prototype.showStatements = function(statements) {
 		let shownStatements = statements.map(x => this.show(x));
@@ -74,6 +86,11 @@
 	// Shows a (comma separate) tuple of expressions
 	HTMLShower.prototype.showExpressions = function(expressions) {
 		let shownExpressions = expressions.map(x => this.show(x, ""));
+		for (var i = 1; i < shownExpressions.length; i++) {
+			if (stripTags(shownExpressions[i])[0] === "(") {
+				shownExpressions[i-1] += ";" // XXX: this needs to go inside the </div>
+			}
+		}
 		return shownExpressions.join(", ");
 	};
 
@@ -96,8 +113,27 @@
 		return open + this.showStatements(clause.body);
 	}
 
-	// Parent is a string representing the operator
 	HTMLShower.prototype.show = function(parse, parent) {
+		let out = this.showRaw(parse, parent);
+		let isError = parse.problems.filter(x => x.type === "error").length;
+		let isWarning = parse.problems.filter(x => x.type === "warning").length;
+		let isInfo = parse.problems.filter(x => x.type === "info").length;
+
+
+
+		let desc = parse.problems.map(x => x.title + "\n" + x.message).join("\n\n");
+		if (isError) {
+			return span.error(out, desc);
+		} else if (isWarning) {
+			return span.warning(out, desc);
+		} else if (isInfo) {
+			return span.info(out, desc);
+		}
+		return out;
+	};
+
+	// Parent is a string representing the operator
+	HTMLShower.prototype.showRaw = function(parse, parent) {
 		let parened = function(op) {
 			if (parent === undefined) {
 				throw new Error("no parent");

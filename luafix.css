@@ -38,8 +38,10 @@ div.code .string {
 }
 
 .pyellow, .pred, .pblue, .pgray, .ppurple {
-	display: inline;
-	padding: .25em;
+	display: inline-block;
+	padding: 0em;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
 }
 
 .pyellow {
@@ -50,7 +52,6 @@ div.code .string {
 .pred {
 	border-bottom: 3px solid #FF5454;
 	background: #FAA;
-	padding: 0.5em;
 }
 
 .pblue {
