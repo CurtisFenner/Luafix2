@@ -1,7 +1,9 @@
 "use strict";
 
 let lphelp = require("./lphelp.js");
-var PlainHTMLShower = require("./show.js").PlainHTMLShower;
+let htmlshow = require("./htmlshow.js");
+
+let show = x => new htmlshow.HTMLShower().show(x, "");
 
 function antipatternStage(parse, options) {
 	// Find `x ~= nil`
@@ -520,7 +522,7 @@ function searchBadCondition(tree) {
 			}
 			if (!okay || warning) {
 				var heading = "Constant used as condition";
-				var body = "The value <code>" + new PlainHTMLShower().show(tree.condition) + "</code> is always " + (isTruthy(tree.condition) ? "truthy" : "falsey");
+				var body = "The value <code>" + show(tree.condition) + "</code> is always " + (isTruthy(tree.condition) ? "truthy" : "falsey");
 				if (warning) {
 					tree.condition.warn(heading, body);
 				} else {
