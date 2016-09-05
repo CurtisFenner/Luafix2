@@ -201,7 +201,11 @@
 			);
 		// Expression Atoms
 		} else if (parse.type === "StringLiteral") {
-			return span.string(parse.raw);
+			let escaped = parse.raw
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/, "&gt;");
+			return span.string(escaped);
 		} else if (parse.type === "NumericLiteral") {
 			return span.number(parse.raw);
 		} else if (parse.type === "BooleanLiteral") {
