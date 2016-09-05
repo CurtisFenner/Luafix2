@@ -84,7 +84,6 @@ if workspace:FindFirstChild("Cat") ~= nil then
 	print(cat);
 end</textarea><br>
 	<button id="checkbutton">Luafix this</button>
-	<input type="checkbox" name="implementationShow" checked id="implementationShow"><label for="implementationShow">Show "Unimplemented" Warnings</label>
 	<input type="checkbox" name="useRoblox" checked id="useRoblox"><label for="useRoblox">This is ROBLOX code</label>
 <div id="formatted" class="formatted code"></div>
 <div id="hoverables"></div>
@@ -96,14 +95,6 @@ var USE_ROBLOX = true;
 var COMPLAIN_BOOLEAN_COMPARE = false;
 // Complain about A ~= false or A == nil always, regardless of context.
 // (Otherwise, only complains inside conditions)
-document.getElementById("implementationShow").onchange = function() {
-	var e = document.getElementById("implementationShow").checked;
-	if (!e) {
-		showhide.innerHTML = ".implementation {display:none;}";
-	} else {
-		showhide.innerHTML = "";
-	}
-}
 
 document.getElementById("useRoblox").onchange = function() {
 	USE_ROBLOX = document.getElementById("useRoblox").checked;
