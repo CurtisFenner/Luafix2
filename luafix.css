@@ -18,14 +18,14 @@ div.code .scope {
 	background: black;
 	color: white;
 }
-div.code .key {/* keywords */
+div.code .keyword {/* keywords */
 	font-weight: bold;
 }
 div.code .logical { /* and, or, not */
 	font-weight: bold;
 	color: #F05;
 }
-div.code .keyliteral { /* nil, false, true */
+div.code .literalKeyword { /* nil, false, true */
 	font-weight: bold;
 	color: #50F;
 }
