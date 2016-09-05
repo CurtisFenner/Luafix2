@@ -334,7 +334,7 @@ function variableCheck(parse, context) {
 	}
 	if (parse.undefined) {
 		if (!context.variables.globals[parse.name] || statementContext(parse).type === "Chunk") {
-			error("The variable <code>" + parse.name + "</code> is not defined", "This name hasn't been defined. Have you made a typo?", parse);
+			parse.error("The variable <code>" + parse.name + "</code> is not defined", "This name hasn't been defined. Have you made a typo?");
 		}
 	}
 	if (parse.definition) {

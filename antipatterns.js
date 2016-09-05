@@ -574,9 +574,8 @@ function antiTruthyCompare(tree, context) {
 		}
 		var complain = COMPLAIN_BOOLEAN_COMPARE || context.contains("condition");
 		if (sub && complain) {
-			warn("Unnecessary comparison in condition",
-				"Consider using simply <code>" + pre + show(sub) + "</code> instead of <code>" + show(tree) + "</code>.",
-				tree);
+			tree.warn("Unnecessary comparison in condition",
+				"Consider using simply <code>" + pre + show(sub) + "</code> instead of <code>" + show(tree) + "</code>.");
 			if (pre) {
 				// Suggestion is not(sub) for tree
 				tree.suggestion = {
