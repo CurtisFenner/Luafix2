@@ -6,11 +6,17 @@ body {
 	background:#FAFAFA;
 }
 div.code {
-	white-space: pre;
 	font-family: 'ubuntu mono', monospace;
 	font-size: 14px;
 	line-height: 200%;
 	position: relative;
+}
+div.code .scope {
+	padding-left: 2em;
+}
+.unknown {
+	background: black;
+	color: white;
 }
 div.code .key {/* keywords */
 	font-weight: bold;
@@ -41,11 +47,6 @@ div.code .string {
 	background: #FDA;
 }
 
-.pgray {
-	border: 1px dotted black;
-	background: #EEE;
-}
-
 .pred {
 	border-bottom: 3px solid #FF5454;
 	background: #FAA;
@@ -55,15 +56,6 @@ div.code .string {
 .pblue {
 	border-bottom: 3px solid #DDDDFF;
 	background: #EEEEFF;
-}
-
-.pundefined {
-
-	background: gray;
-}
-
-.post .problemtext {
-	display: none;
 }
 
 #hoverables {

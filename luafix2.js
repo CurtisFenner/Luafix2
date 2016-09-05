@@ -20,7 +20,10 @@ function Reportable(object, root) {
 // .implementation
 function OReportable(object, root) {
 	for (var p in object) {
-		this[p] = Reportable(object[p], root);
+		if (object[p] !== null) {
+			// properties like .step in for loops can be null
+			this[p] = Reportable(object[p], root);
+		}
 	}
 	this.root = root;
 	this.problems = [];
@@ -76,6 +79,9 @@ function literalCallComplain(tree) {
 function luafix(source, options) {
 	try {
 		var parse = luaparse.parse(source);
+		console.log("PARSE");
+		console.log(parse);
+		console.log("=============================");
 	} catch (e) {
 		// TODO: deal with this
 		console.log("parser error", e);
