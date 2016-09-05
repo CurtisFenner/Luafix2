@@ -1,5 +1,5 @@
+"use strict";
 {
-	"use strict";
 
 	let lphelp = require("./lphelp.js");
 	let show = require("./show.js");

@@ -1,5 +1,5 @@
+"use strict";
 {
-	"use strict";
 
 	function HTMLShower() {
 		this.x = 5;
@@ -43,7 +43,6 @@
 		}
 		// TODO: add parenthesis around `not` when used in a comparison
 		for (var i = 0; i < precedenceTable.length; i += 2) {
-			console.log(precedenceTable[i]);
 			if (precedenceTable[i].contains(child)) {
 				for (var j = 0; j < precedenceTable.length; j += 2) {
 					if (precedenceTable[j].contains(parent)) {
