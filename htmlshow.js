@@ -5,6 +5,56 @@
 		this.x = 5;
 	}
 
+	let precedenceTable = [
+		[".", ":"], false,
+		["()"], false,
+		["^"], true, // associativity is not obvious
+		["u_not", "u_#", "u_-"], false,
+		["*", "/", "%"], false,
+		["+", "-"], false,
+		[".."], false,
+		["<", ">", "<=", ">=", "~=", "=="], true,
+		["and"], false,
+		["or"], false,
+	];
+
+	let childNeedsParenthesisHelper = function(i, j) {
+		if (i < j) {
+			return false;
+		}
+		if (i === j) {
+			return precedenceTable[i + 1];
+		}
+		return true;
+	};
+	function childNeedsParenthesis(child, parent) {
+		if (parent === "") {
+			return false;
+		}
+		if (child === parent && child === "u_-") {
+			// prevent --
+			return true;
+		}
+		if (!parent || !child) {
+			throw new Error("bad arguments `" + parent + "` ... `" + child + "`");
+		}
+		if (child === "and" && parent === "or") {
+			return true;
+		}
+		// TODO: add parenthesis around `not` when used in a comparison
+		for (var i = 0; i < precedenceTable.length; i += 2) {
+			console.log(precedenceTable[i]);
+			if (precedenceTable[i].contains(child)) {
+				for (var j = 0; j < precedenceTable.length; j += 2) {
+					if (precedenceTable[j].contains(parent)) {
+						return childNeedsParenthesisHelper(i, j, child, parent);
+					}
+				}
+			}
+		}
+		throw new Error("no operators `" + parent + "` ... `" + child + "`");
+	}
+
 	let spanner = c => x => "<span class=" + c + ">" + x + "</span>";
 	let span = {
 		keyword: spanner("keyword"),
@@ -24,7 +74,7 @@
 
 	// Shows a (comma separate) tuple of expressions
 	HTMLShower.prototype.showExpressions = function(expressions) {
-		let shownExpressions = expressions.map(x => this.show(x));
+		let shownExpressions = expressions.map(x => this.show(x, ""));
 		return shownExpressions.join(", ");
 	};
 
@@ -36,18 +86,29 @@
 	HTMLShower.prototype.showClause = function(clause) {
 		if (clause.type === "IfClause") {
 			var open = "<div class=line>" + span.keyword("if") +
-				" " + this.show(clause.condition) +
+				" " + this.show(clause.condition, "") +
 				" " + span.keyword("then") + "</div>";
 		} else if (clause.type === "ElseifClause") {
 			var open = "<div class=line>" + span.keyword("elseif")
-				+ " " + this.show(clause.condition) + " then</div>";
+				+ " " + this.show(clause.condition, "") + " then</div>";
 		} else {
 			var open = "<div class=line>" + span.keyword("else") + "</div>";
 		}
 		return open + this.showStatements(clause.body);
 	}
 
-	HTMLShower.prototype.show = function(parse) {
+	// Parent is a string representing the operator
+	HTMLShower.prototype.show = function(parse, parent) {
+		let parened = function(op) {
+			if (parent === undefined) {
+				throw new Error("no parent");
+			}
+			if (childNeedsParenthesis(op, parent)) {
+				return x => "(" + x + ")";
+			} else {
+				return x => x;
+			}
+		};
 		// Compound statements
 		if (parse.type === "Chunk") {
 			return this.showStatements(parse.body);
@@ -69,11 +130,11 @@
 		} else if (parse.type === "ForNumericStatement") {
 			let r = "<div class=line>" +
 				span.keyword("for") + " " + parse.variable.name + " = ";
-			r += this.show(parse.start) + ", " + this.show(parse.end);
+			r += this.show(parse.start, "") + ", " + this.show(parse.end, "");
 			if (parse.step) {
-				r += ", " + this.show(parse.step);
+				r += ", " + this.show(parse.step, "");
 			}
-			r += " do</div>";
+			r += " " + span.keyword("do") + "</div>";
 			r += this.showStatements(parse.body);
 			r += end
 			return r;
@@ -84,7 +145,7 @@
 				" = " +
 				this.showExpressions(parse.init) + "</div>";
 		} else if (parse.type === "ReturnStatement") {
-			let r = "<div class=line>return";
+			let r = "<div class=line>" + span.keyword("return");
 			if (parse.arguments.length > 0) {
 				r += " " + this.showExpressions(parse.arguments);
 			}
@@ -100,32 +161,44 @@
 				return r + "</div>";
 			}
 		} else if (parse.type === "CallStatement") {
-			return "<div class=line>" + this.show(parse.expression) + "</div>";
+			return "<div class=line>"
+				+ this.show(parse.expression, "") + "</div>";
 		// Expressions
 		} else if (parse.type === "UnaryExpression") {
-			// TODO: fix parentheses
 			if (parse.operator === "not") {
-				return span.logical(parse.operator) +
-					" " + this.show(parse.argument);
+				return parened("u_" + parse.operator)(
+					span.logical(parse.operator) +
+					" " + this.show(parse.argument, "u_" + parse.operator)
+				);
 			} else {
-				return parse.operator + this.show(parse.argument);
+				return parened("u_" + parse.operator)(
+					parse.operator +
+					this.show(parse.argument, "u_" + parse.operator)
+				);
 			}
 		} else if (parse.type === "MemberExpression") {
-			// TODO: fix parentheses
-			return this.show(parse.base) + parse.indexer + this.show(parse.identifier);
+			return parened(".")(
+				this.show(parse.base, parse.indexer) +
+				parse.indexer + this.show(parse.identifier)
+			);
 		} else if (parse.type === "CallExpression") {
-			// TODO: fix parentheses
-			return this.show(parse.base) + "(" + this.showExpressions(parse.arguments) + ")";
+			// XXX: Does this need `parened` ever? I don't think so
+			return this.show(parse.base, "()") +
+				"(" + this.showExpressions(parse.arguments) + ")";
 		} else if (parse.type === "BinaryExpression") {
-			// TODO: fix p arentheses
-			return this.show(parse.left) +
-				" " + parse.operator.replace(/</g, "&lt;").replace(/>/g, "&gt;") +
-				" " + this.show(parse.right);
+			let op = parse.operator;
+			return parened(op)(
+				this.show(parse.left, op) +
+				" " + op.replace(/</g, "&lt;").replace(/>/g, "&gt;") +
+				" " + this.show(parse.right, op)
+			);
 		} else if (parse.type == "LogicalExpression") {
-			// TODO: fix parentheses
-			return this.show(parse.left) +
-				" " + span.logical(parse.operator) +
-				" " + this.show(parse.right);
+			let op = parse.operator;
+			return parened(op)(
+				this.show(parse.left, op) +
+				" " + span.logical(op) +
+				" " + this.show(parse.right, op)
+			);
 		// Expression Atoms
 		} else if (parse.type === "StringLiteral") {
 			return span.string(parse.raw);
