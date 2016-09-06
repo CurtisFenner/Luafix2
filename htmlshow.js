@@ -154,7 +154,7 @@
 			}
 			r += span.keyword("function");
 			if (parse.identifier) {
-				r += " " + this.show(parse.identifier);
+				r += " " + this.show(parse.identifier, "");
 			}
 			r += "(" + this.showExpressions(parse.parameters) + ")</div>\n";
 			r += this.showStatements(parse.body);

@@ -28,9 +28,13 @@
 			var defined = 40 + 8 * usages + length;
 			if (inline / 2 > defined) {
 				for (var i = 0; i < data[statement].length; i++) {
-					warn("Statement is excessively repeated",
-						"The statement <code>" + statement + "</code> is repeated too much. Using a function or variable, you could save around " + (inline - defined) + " characters, and a lot of typing when you make changes.",
-						data[statement][i]);
+					data[statement][i].warn(
+						"Statement is excessively repeated",
+						"The statement <code>" + statement +
+						"</code> is repeated too much. Using a function or variable, you could save around " +
+						(inline - defined) +
+						" characters, and a lot of typing when you make changes."
+					);
 				}
 			}
 		}
