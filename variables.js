@@ -107,8 +107,6 @@ function VariableContext(options) {
 	for (var i = 0; i < builtins.length; i++) {
 		this.globals[ builtins[i] ] = builtin(builtins[i]);
 	}
-	// TODO: make this work
-	/*
 	if (options.USE_ROBLOX) {
 		delete this.globals.os;
 		delete this.globals.io;
@@ -130,12 +128,12 @@ function VariableContext(options) {
 			this.globals[builtins[i]] = builtin(builtins[i]);
 		}
 	}
-	*/
+	this.options = options;
 	this.stack = [[]];
 }
 
 VariableContext.prototype.copy = function copyContext() {
-	var n = new VariableContext();
+	var n = new VariableContext(this.options);
 	for (var p in this.globals) {
 		n.globals[p] = this.globals[p].copy();
 	}
@@ -226,20 +224,22 @@ function setUnion(a, b) {
 // possible (e.g., after an 'if')
 VariableContext.prototype.merged = function merged(otherContext) {
 	// TODO: assert that variables are the same, for sure
-	var r = new VariableContext();
+	var r = new VariableContext(this.options);
 	for (var global in this.globals) {
 		var here = this.globals[global];
 		var there = otherContext.globals[global];
 		if (!there) {
 			r.globals[global] = here;
-			warn("Suspicious use of globals", "The assignment of <code>" + global + "</code> is conditional.");
+			// TODO
+			console.log("Suspicious use of globals", "The assignment of <code>" + global + "</code> is conditional.");
 		} else {
 			r.globals[global] = here.merged(there);
 		}
 	}
 	for (var global in otherContext.globals) {
 		if (!r.globals[global]) {
-			warn("Suspicious use of globals", "The assignment of <code>" + global + "</code> is conditional.");
+			// TODO
+			console.log("Suspicious use of globals", "The assignment of <code>" + global + "</code> is conditional.");
 			r.globals[global] = otherContext.globals[global];
 		}
 	}
@@ -364,7 +364,7 @@ function variableCheck(parse, context) {
 }
 
 function variableStage(parse, options) {
-	var context = {variables: new VariableContext()};
+	var context = {variables: new VariableContext(options)};
 	variablePass(parse, context);
 	context.variables.finish();
 	lphelp.recurse(parse, variableProcess);
