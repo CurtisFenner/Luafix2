@@ -60,7 +60,7 @@
 	let spanner = c => x => "<span class=" + c + ">" + x + "</span>";
 	let titler = c => (x, t) => {
 		let escaped = stripTags(t).replace(/"/g, "&quot;");
-		return "<span class=" + c + " title=\"" + escaped + "\">" + x + "</span>";
+		return "<div class='inline " + c + "' title=\"" + escaped + "\">" + x + "</div>";
 	}
 	let span = {
 		keyword: spanner("keyword"),
@@ -105,8 +105,9 @@
 				" " + this.show(clause.condition, "") +
 				" " + span.keyword("then") + "</div>";
 		} else if (clause.type === "ElseifClause") {
-			var open = "<div class=line>" + span.keyword("elseif")
-				+ " " + this.show(clause.condition, "") + " then</div>";
+			var open = "<div class=line>" + span.keyword("elseif") +
+				" " + this.show(clause.condition, "") +
+				" " + span.keyword("then") + "</div>";
 		} else {
 			var open = "<div class=line>" + span.keyword("else") + "</div>";
 		}
@@ -118,8 +119,6 @@
 		let isError = parse.problems.filter(x => x.type === "error").length;
 		let isWarning = parse.problems.filter(x => x.type === "warning").length;
 		let isInfo = parse.problems.filter(x => x.type === "info").length;
-
-
 
 		let desc = parse.problems.map(x => x.title + "\n" + x.message).join("\n\n");
 		if (isError) {
@@ -162,6 +161,23 @@
 			return r;
 		} else if (parse.type === "IfStatement") {
 			return this.showClauses(parse.clauses);
+		} else if (parse.type === "WhileStatement") {
+			let r = "<div class=line>" +
+				span.keyword("while") + " " +
+				this.show(parse.condition, "") + " " +
+				span.keyword("do") + "</div>";
+			r += this.showStatements(parse.body);
+			r += end;
+			return r;
+		} else if (parse.type === "ForGenericStatement") {
+			let r = "<div class=line>" + span.keyword("for") +
+				" " + this.showExpressions(parse.variables) +
+				" " + span.keyword("in") +
+				" " + this.showExpressions(parse.iterators) +
+				" " + span.keyword("do") + "</div>";
+			r += this.showStatements(parse.body);
+			r += end;
+			return r;
 		} else if (parse.type === "ForNumericStatement") {
 			let r = "<div class=line>" +
 				span.keyword("for") + " " + parse.variable.name + " = ";
