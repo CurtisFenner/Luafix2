@@ -207,7 +207,7 @@ function badIndex(tree) {
 		if (tree.index.type === "StringLiteral") {
 			if (isIdentifier(tree.index.value)) {
 				var r = {type: "MemberExpression", indexer: ".", base: tree.base, identifier: {type: "Identifier", name: tree.index.value}};
-				warn("Use <code>" + show(r) + "</code> instead of indexing by a string", "Indexing should be used for variables or names which need it.", tree);
+				tree.warn("Use <code>" + show(r) + "</code> instead of indexing by a string", "Indexing should be used for variables or names which need it.");
 				tree.suggestion = r;
 			}
 		}
@@ -218,18 +218,16 @@ function badIndex(tree) {
 function badAssignment(tree) {
 	if (tree.type === "AssignmentStatement" || tree.type === "LocalStatement") {
 		if (tree.variables.length < tree.init.length) {
-			error(
+			tree.error(
 				"Some values are lost in the assignment",
-				"There are more values than there are variables. Either some values should be saved, or this should be broken into separate statements.",
-				tree);
+				"There are more values than there are variables. Either some values should be saved, or this should be broken into separate statements.");
 		}
 		if (tree.variables.length === 1 && tree.init.length === 1) {
 			if (canBeFunctionIdentifier(tree.variables[0])) {
 				var fun = tree.init[0];
 				if (fun.type === "FunctionDeclaration") {
-					warn("Use normal function declaration syntax",
-						"Your meaning will be clearer if you use the construct designed for this, a function declaration",
-						tree.variables[0]);
+					tree.variables[0].warn("Use normal function declaration syntax",
+						"Your meaning will be clearer if you use the construct designed for this, a function declaration");
 					tree.suggestion = {
 						type:"FunctionDeclaration", identifier: tree.variables[0],
 						isLocal: tree.type === "LocalStatement", parameters: fun.parameters,
@@ -460,41 +458,41 @@ function checkBadCondition(tree, complainRight) {
 	// Always true or always false conditions are bad.
 	if (tree.type == "LogicalExpression") {
 		if (show(tree.left) == show(tree.right)) {
-			error("Logical operator is unnecessary", "The left and right expressions are the same", tree);
+			tree.error("Logical operator is unnecessary", "The left and right expressions are the same");
 		}
 		if (tree.operator == "and") {
 			if (isFalsey(tree.left)) {
-				error("Condition is always <code>false</code>",
-					"The left expression <code>" + show(tree.left) + "</code> is always falsy.", tree);
+				tree.error("Condition is always <code>false</code>",
+					"The left expression <code>" + show(tree.left) + "</code> is always falsy.");
 			}
 			if (isFalsey(tree.right) && complainRight) {
-				error("Condition is always <code>false</code>",
-					"The right expression <code>" + show(tree.right) + "</code> is always falsy", tree);
+				tree.error("Condition is always <code>false</code>",
+					"The right expression <code>" + show(tree.right) + "</code> is always falsy");
 			}
 			if (isTruthy(tree.left)) {
-				error("Right side of <code>and</code> is redundant",
-					"The left side <code>" + show(tree.left) + "</code> is always truthy", tree);
+				tree.error("Right side of <code>and</code> is redundant",
+					"The left side <code>" + show(tree.left) + "</code> is always truthy");
 			}
 			if (isTruthy(tree.right) && complainRight) {
-				error("Left side of <code>and</code> is redundant",
-					"The right side <code>" + show(tree.right) + "</code> is always truthy", tree);
+				tree.error("Left side of <code>and</code> is redundant",
+					"The right side <code>" + show(tree.right) + "</code> is always truthy");
 			}
 		} else if (tree.operator == "or") {
 			if (isTruthy(tree.left)) {
-				error("Condition is always <code>true</code>",
-					"The left expression <code>" + show(tree.left) + "</code> is always truthy.", tree);
+				tree.error("Condition is always <code>true</code>",
+					"The left expression <code>" + show(tree.left) + "</code> is always truthy.");
 			}
 			if (isTruthy(tree.right) && complainRight) {
-				error("Condition is always <code>true</code>",
-					"The right expression <code>" + show(tree.right) + "</code> is always truthy", tree);
+				tree.error("Condition is always <code>true</code>",
+					"The right expression <code>" + show(tree.right) + "</code> is always truthy");
 			}
 			if (isFalsey(tree.left)) {
-				error("Left side of <code>or</code> is redundant",
-					"The left side <code>" + show(tree.left) + "</code> is always falsey", tree);
+				tree.error("Left side of <code>or</code> is redundant",
+					"The left side <code>" + show(tree.left) + "</code> is always falsey");
 			}
 			if (isFalsey(tree.right) && complainRight) {
-				error("Right side of <code>or</code> is redundant",
-					"The right side <code>" + show(tree.right) + "</code> is always falsey", tree);
+				tree.error("Right side of <code>or</code> is redundant",
+					"The right side <code>" + show(tree.right) + "</code> is always falsey");
 			}
 		}
 	}
