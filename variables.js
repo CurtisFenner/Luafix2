@@ -559,6 +559,13 @@ function variablePass(parse, context) {
 				copy.variables.assign(parse.parameters[i], ["any"], false);
 			}
 		}
+		if (parse.identifier && parse.identifier.indexer === ":") {
+			let self = {
+				name: "self",
+			};
+			copy.variables.local(self);
+			copy.variables.assign(self, ["any"], false);
+		}
 		for (var i = 0; i < parse.body.length; i++) {
 			variablePass(parse.body[i], copy);
 		}
