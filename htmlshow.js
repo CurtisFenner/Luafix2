@@ -232,6 +232,8 @@
 				this.show(parse.base, parse.indexer) +
 				parse.indexer + this.show(parse.identifier)
 			);
+		} else if (parse.type === "IndexExpression") {
+			return this.show(parse.base, "()") + "[" + this.show(parse.index, "") + "]";
 		} else if (parse.type === "CallExpression") {
 			// XXX: Does this need `parened` ever? I don't think so
 			return this.show(parse.base, "()") +
