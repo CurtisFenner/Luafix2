@@ -261,6 +261,8 @@
 			return span.number(parse.raw);
 		} else if (parse.type === "BooleanLiteral") {
 			return span.literalKeyword(parse.raw);
+		} else if (parse.type === "VarargLiteral") {
+			return span.literalKeyword("...");
 		} else if (parse.type === "NilLiteral") {
 			return span.literalKeyword(parse.raw);
 		} else if (parse.type === "Identifier") {
