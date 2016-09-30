@@ -36,7 +36,7 @@ function checkReturnStatementNil(e) {
 			}
 		}
 		if (!notNil) {
-			warn("Unnecessary <code>return</code>", "Functions implicitly return <code>nil</code>.", e);
+			e.warn("Unnecessary <code>return</code>", "Functions implicitly return <code>nil</code>.");
 		}
 	}
 }
@@ -110,9 +110,8 @@ function expressionFlipped(a, b) {
 
 function checkBadConditionFlip(a, b) {
 	if (expressionFlipped(a.condition, b.condition)) {
-		warn("Condition flipped instead of using <code>else</code>",
-			"Instead of inverting <code>" + show(a.condition) + "</code>, consider using <code>else</code> here.",
-			b.condition);
+		b.condition.warn("Condition flipped instead of using <code>else</code>",
+			"Instead of inverting <code>" + show(a.condition) + "</code>, consider using <code>else</code> here.");
 	}
 }
 
@@ -136,9 +135,8 @@ function successiveIfs(a, b) {
 	//
 	var u = intersect(ca, cb);
 	if (u.length != 0) {
-		warn("Conditions repeated in consecutive <code>if</code>s",
-			"Instead of repeating <code>" + u[0] + "</code>, consider grouping these under a larger <code>if " + u[0] + " then</code> statement.",
-			b.clauses[0].condition);
+		b.clauses[0].condition.warn("Conditions repeated in consecutive <code>if</code>s",
+			"Instead of repeating <code>" + u[0] + "</code>, consider grouping these under a larger <code>if " + u[0] + " then</code> statement.");
 	}
 }
 
@@ -167,7 +165,7 @@ function endingUnderscore(t) {
 	function check(v, to) {
 		for (var i = v.length - 1; i >= (to || 0); i--) {
 			if (v[i].type === "Identifier" && isUnderscores(v[i].name)) {
-				error("Unnecessary identifier", "Since <code>" + v[i].name + "</code> won't be used, it should be dropped.", v[i]);
+				v[i].error("Unnecessary identifier", "Since <code>" + v[i].name + "</code> won't be used, it should be dropped.");
 			} else {
 				break;
 			}
@@ -248,13 +246,11 @@ function badLoop(tree) {
 	if (tree.type === "RepeatStatement" || tree.type === "WhileStatement") {
 		if (tree.body.length === 0) {
 			if ((isFalsey(tree.condition) && tree.type === "RepeatStatement") || (isTruthy(tree.condition) && tree.type === "WhileStatement")) {
-				error("Infinite loop will crash", "This infinite loop will crash. Add a body to it or change the condition.", tree);
+				tree.error("Infinite loop will crash", "This infinite loop will crash. Add a body to it or change the condition.");
 			} else {
-				warn(
+				tree.warn(
 					"Empty loop",
-					"This <code>" + (tree.type === "RepeatStatement" ? "repeat" : "while") + "</code> will likely crash if it runs.",
-					tree
-				);
+					"This <code>" + (tree.type === "RepeatStatement" ? "repeat" : "while") + "</code> will likely crash if it runs.");
 			}
 		}
 	}
@@ -263,11 +259,9 @@ function badLoop(tree) {
 			if (tree.body[0].type === "IfStatement") {
 				var last = tree.body[0].clauses[tree.body[0].clauses.length - 1];
 				if (last.type === "ElseClause") {
-					warn(
+					tree.body[0].clauses[tree.body[0].clauses.length - 1].warn(
 						"Exhausted <code>if</code> in loop",
-						"You should be careful that no action is taken based solely on the first or last iteration of the loop.",
-						tree.body[0].clauses[tree.body[0].clauses.length - 1]
-					);
+						"You should be careful that no action is taken based solely on the first or last iteration of the loop.");
 				}
 			}
 		}
@@ -306,8 +300,8 @@ function antiTruthyPost(tree, context) {
 function badNot(tree) {
 	if (tree.type == "BinaryExpression" && tree.operator == "==") {
 		if (tree.left.type == "UnaryExpression" && tree.left.operator == "not") {
-			warn("Comparing <code>not</code> of value",
-				"<code>not</code> has higher precedence than <code>==</code>. If you want to check if two values are different, you should use <code>~=</code>.", tree);
+			tree.warn("Comparing <code>not</code> of value",
+				"<code>not</code> has higher precedence than <code>==</code>. If you want to check if two values are different, you should use <code>~=</code>.");
 		}
 	}
 	if (tree.type == "UnaryExpression" && tree.operator == "not") {
@@ -326,13 +320,13 @@ function badComparisons(tree) {
 		var operator = tree.operator;
 		if (relation.indexOf(operator) >= 0) {
 			if (tree.left.type == "TableConstructorExpression" || tree.right.type == "TableConstructorExpression") {
-				error("Expression is always <code>" + (operator == "~=") +"</code>",
-					"Tables are compared by reference. This comparison creates a <em>new</em> table, different from all others.", tree);
+				tree.error("Expression is always <code>" + (operator == "~=") +"</code>",
+					"Tables are compared by reference. This comparison creates a <em>new</em> table, different from all others.");
 			}
 			if (isTruthy(tree.left) && isTruthy(tree.right)) {
-				error("Redundant comparison",
+				tree.error("Redundant comparison",
 					"The result of <code>" + show(tree) +
-					"</code> is clear without running the script. Write <code>true</code> or <code>false</code> when that is what you mean.", tree);
+					"</code> is clear without running the script. Write <code>true</code> or <code>false</code> when that is what you mean.");
 			}
 		}
 	}
@@ -444,9 +438,8 @@ function badRepeat(tree) {
 		var then = tree.clauses[0];
 		if (then.body.length == 1) {
 			if (then.body[0].type === "RepeatStatement") {
-				warn("Consider using a <code>while</code> instead [DRY]",
-					"Instead of using <code>if a then repeat until not a</code>, just use <code>while a do end</code>",
-					then);
+				then.warn("Consider using a <code>while</code> instead [DRY]",
+					"Instead of using <code>if a then repeat until not a</code>, just use <code>while a do end</code>");
 			}
 		}
 	}
@@ -602,13 +595,13 @@ function antiFFCDot(tree) {
 				tree.base = {type: "IndexExpression", base: left, index: name};
 				var soln = show(tree);
 				tree.base = temp;
-				warn("You index a result of <code>:FindFirstChild</code>",
+				tree.warn("You index a result of <code>:FindFirstChild</code>",
 					"Your code uses <code>" + show( tree ) + "</code>. Using "
 					+ "<code>.</code> or <code>:</code> on the result of "
 					+ "<code>:FindFirstChild</code> will result in an error if "
 					+ "it returns <code>nil</code>. You should either do proper "
 					+ "handling of <code>nil</code> or simply use <code>" + soln
-					+ "</code>", tree);
+					+ "</code>");
 				tree.base.suggestion = {type: "IndexExpression", base: left, index: name};
 			}
 		}
