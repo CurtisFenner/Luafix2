@@ -116,6 +116,7 @@
 
 	HTMLShower.prototype.show = function(parse, parent) {
 		let out = this.showRaw(parse, parent);
+		parse.problems = parse.problems || [];
 		let isError = parse.problems.filter(x => x.type === "error").length;
 		let isWarning = parse.problems.filter(x => x.type === "warning").length;
 		let isInfo = parse.problems.filter(x => x.type === "info").length;
@@ -190,6 +191,8 @@
 			r += end
 			return r;
 		// Statements
+		} else if (parse.type === "BreakStatement") {
+			return "<div class=line>" + span.keyword("break") + "</div>";
 		} else if (parse.type === "AssignmentStatement") {
 			return "<div class=line>" +
 				this.showExpressions(parse.variables) +
