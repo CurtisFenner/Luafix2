@@ -170,6 +170,11 @@
 			r += this.showStatements(parse.body);
 			r += end;
 			return r;
+		} else if (parse.type === "RepeatStatement") {
+			let r = "<div class=line>" + span.keyword("repeat") + "</div>";
+			r += this.showStatements(parse.body);
+			r += "<div class=line>" + span.keyword("until") + " " + this.show(parse.condition, "") + "</div>";
+			return r;
 		} else if (parse.type === "ForGenericStatement") {
 			let r = "<div class=line>" + span.keyword("for") +
 				" " + this.showExpressions(parse.variables) +
