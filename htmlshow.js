@@ -243,9 +243,15 @@
 		} else if (parse.type === "IndexExpression") {
 			return this.show(parse.base, "()") + "[" + this.show(parse.index, "") + "]";
 		} else if (parse.type === "CallExpression") {
-			// XXX: Does this need `parened` ever? I don't think so
-			return this.show(parse.base, "()") +
-				"(" + this.showExpressions(parse.arguments) + ")";
+			let pre = "";
+			let post = "";
+			if (parse.inParens) {
+				// parenthesization drops tuples, and so is meaningful
+				pre = "(";
+				post = ")";
+			}
+			return pre + this.show(parse.base, "()") +
+				"(" + this.showExpressions(parse.arguments) + ")" + post;
 		} else if (parse.type === "BinaryExpression") {
 			let op = parse.operator;
 			return parened(op)(
@@ -260,6 +266,19 @@
 				" " + span.logical(op) +
 				" " + this.show(parse.right, op)
 			);
+		// Table literals
+		} else if (parse.type === "TableValue") {
+			return "<div class=line>" + this.show(parse.value, "") + ",</div>";
+		} else if (parse.type === "TableKey") {
+			return "<div class=line>[" + this.show(parse.key, "") + "] = " + this.show(parse.value, "") + ",</div>";
+		} else if (parse.type === "TableKeyString") {
+			return "<div class=line>" + this.show(parse.key, "") + " = " + this.show(parse.value, "") + ",</div>";
+		} else if (parse.type === "TableConstructorExpression") {
+			if (parse.fields.length === 0) {
+				return "{}";
+			}
+			let fields = parse.fields.map(f => this.show(f, ""));
+			return "{<div class=scope>" + fields.join("") + "</div>}";
 		// Expression Atoms
 		} else if (parse.type === "StringLiteral") {
 			let escaped = parse.raw
