@@ -296,11 +296,9 @@
 			return span.literalKeyword(parse.raw);
 		} else if (parse.type === "Identifier") {
 			return parse.name;
-		} else {
-			console.log("unknown parse type `" + parse.type + "`");
-			console.log(parse);
-			return "<p class=unknown>" + parse.type + "</p>";
 		}
+		console.log("unknown parse type `" + parse.type + "`");
+		console.log(parse);
 		throw new Error("fell through on type `" + parse.type + "`");
 	};
 

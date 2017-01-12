@@ -5,7 +5,7 @@
 	let htmlshow = require("./htmlshow.js");
 
 	function repetitionKey(tree) {
-		return new htmlshow.HTMLShower().show(tree, "");
+		return Math.random() + ""; // new htmlshow.HTMLShower().show(tree, "");
 	}
 
 	function observe(tree, data) {
