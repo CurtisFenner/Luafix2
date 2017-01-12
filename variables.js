@@ -211,10 +211,20 @@ VariableContext.prototype.assign = function assign(parse, value, mayIgnore/*??*/
 
 function setUnion(a, b) {
 	if (a instanceof Array && b instanceof Array) {
-		var x = a.concat(b).filter(function(item, pos, arr) { // Remove duplicates
-			return arr.indexOf(item) === pos;
-		});
-		return x;
+		let out = a.slice(0);
+		for (let i = 0; i < b.length; i++) {
+			let good = true;
+			for (let j = 0; j < a.length; j++) {
+				if (a[j] == b[i]) {
+					good = false;
+					break;
+				}
+			}
+			if (good) {
+				out.push(b[i]);
+			}
+		}
+		return out;
 	} else {
 		throw ["invalid parameters to setUnion", a, b];
 	}
