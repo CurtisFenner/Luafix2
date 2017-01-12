@@ -148,7 +148,10 @@
 		if (parse.type === "Chunk") {
 			return this.showStatements(parse.body);
 		} else if (parse.type === "FunctionDeclaration") {
-			let r = "<div class=line>";
+			let r = "";
+			if (parse.identifier) {
+				r = "<div class=line></div>";
+			}
 			if (parse.isLocal) {
 				r += span.keyword("local") + " ";
 			}
@@ -156,9 +159,13 @@
 			if (parse.identifier) {
 				r += " " + this.show(parse.identifier, "");
 			}
-			r += "(" + this.showExpressions(parse.parameters) + ")</div>\n";
+			r += "(" + this.showExpressions(parse.parameters) + ")";
 			r += this.showStatements(parse.body);
-			r += end;
+			if (parse.identifier) {
+				r += end;
+			} else {
+				r += "<div class=line></div>" + span.keyword("end");
+			}
 			return r;
 		} else if (parse.type === "IfStatement") {
 			return this.showClauses(parse.clauses);
