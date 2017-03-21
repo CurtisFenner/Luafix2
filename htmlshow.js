@@ -21,13 +21,13 @@
 	};
 
 	let getParseScopeDepth = function(parse) {
-		if (!parse.parent) {
+		if (!parse.parentNode) {
 			return 0;
 		}
 		if (OPENS_SCOPE[parse.type]) {
-			return 1 + getParseScopeDepth(parse.parent);
+			return 1 + getParseScopeDepth(parse.parentNode);
 		}
-		return getParseScopeDepth(parse.parent);
+		return getParseScopeDepth(parse.parentNode);
 	}
 
 	let precedenceTable = [
@@ -368,17 +368,20 @@
 		} else if (parse.type === "NilLiteral") {
 			return span.literalKeyword(parse.raw);
 		} else if (parse.type === "Identifier") {
+			// Annotate the identifier with scope information (if applicable)
 			let source = parse.variableSource && parse.variableSource.definition;
-
 			if (source) {
 				// local variable defined at source
 				return this.scopeBlock(source, parse.name, true);
 			} else if (parse.definition) {
 				// assignment to a new local? variable
 				return parse.name;
-			} else {
+			} else if (parse.readsFrom || parse.writesTo) {
 				// global (or undefined) variable
 				return this.scopeBlock(0, parse.name, true);
+			} else {
+				// non-variable identifier (e.g., table key)
+				return parse.name;
 			}
 		}
 		console.log("unknown parse type `" + parse.type + "`");
