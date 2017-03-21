@@ -7,14 +7,14 @@
 		let options = {
 			USE_ROBLOX: USE_ROBLOX,
 		};
-		let results = luafix2.luafix(
-			document.getElementById("source").value, options);
 
-		let src =
-			new htmlshow.HTMLShower().show(results.parse);
+		let input = document.getElementById("source").value;
+		let analysis = luafix2.luafix(input, options);
+
+		let src = new htmlshow.HTMLShower().show(analysis.parse);
 		document.getElementById("formatted").innerHTML = src;
 	}
 
 	// makes debuggin faster
-	setTimeout(checkbutton.onclick, 500);
+	setTimeout(checkbutton.onclick, 100);
 }
