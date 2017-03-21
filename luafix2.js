@@ -6,13 +6,30 @@ let redundant = require("./redundant.js");
 let antipatterns = require("./antipatterns.js");
 let magic = require("./magic.js");
 
-function Reportable(object, root) {
+function makeReportable(object, root) {
 	if (object instanceof Array) {
-		return object.map(x => Reportable(x, root));
+		// Create an array of reportables
+		let out = [];
+		for (let i = 0; i < object.length; i++) {
+			let child = makeReportable(object[i], root);
+			out.push(child);
+
+			// Attach parent pointer
+			if (typeof child == 'object') {
+				// Arrays and OReportables
+				child.parentNode = out;
+				child.parentIndex = i;
+			}
+		}
+		return out;
 	}
+
 	if (typeof object != typeof {}) {
+		// Use the same primitive object
 		return object;
 	}
+
+	// Create an OReportable
 	return new OReportable(object, root);
 }
 
@@ -22,7 +39,15 @@ function OReportable(object, root) {
 	for (var p in object) {
 		if (object[p] !== null) {
 			// properties like .step in for loops can be null
-			this[p] = Reportable(object[p], root);
+			let child = makeReportable(object[p], root);
+			this[p] = child;
+
+			// Attach parent pointer
+			if (typeof child == 'object') {
+				// Arrays and OReportables
+				this[p].parentNode = this;
+				this[p].parentIndex = p;
+			}
 		}
 	}
 	this.root = root;
@@ -92,7 +117,7 @@ function luafix(source, options) {
 	var root = [
 		{type:"info", tree: false, strong: "LuaFix started", message: source.length + " bytes processed"},
 	];
-	var result = Reportable(parse, root);
+	var result = makeReportable(parse, root);
 	// Descend through parse
 	variables.lint(result, options);
 	redundant.lint(result, options);
