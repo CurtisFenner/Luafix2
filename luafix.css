@@ -128,3 +128,10 @@ hr {
 	font-size: 18px;
 	line-height: 28px;
 }
+
+.pred .scope-block, .pyellow .scope-block, .pblue .scope-block {
+	/* this is icky */
+	/* TODO: fix this */
+	background: transparent !important;
+}
+

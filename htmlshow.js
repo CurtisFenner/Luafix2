@@ -126,7 +126,7 @@
 		if (inline) {
 			style += "padding: 0.45em;";
 		}
-		return "<" + element + " class='scope" + depth + "' style='" + style + "'>" + content + "</" + element + ">";
+		return "<" + element + " class='scope-block scope" + depth + "' style='" + style + "'>" + content + "</" + element + ">";
 	};
 
 	HTMLShower.prototype.showStatements = function(statements) {
