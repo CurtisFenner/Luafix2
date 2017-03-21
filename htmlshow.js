@@ -376,9 +376,11 @@
 			} else if (parse.definition) {
 				// assignment to a new local? variable
 				return parse.name;
-			} else {
+			} else if (parse.readsFrom || parse.writesTo) {
 				// global (or undefined) variable
 				return this.scopeBlock(0, parse.name, true);
+			} else {
+				return parse.name;
 			}
 		}
 		console.log("unknown parse type `" + parse.type + "`");

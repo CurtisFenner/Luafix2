@@ -162,6 +162,11 @@ VariableContext.prototype.search = function search(name) {
 };
 
 VariableContext.prototype.read = function read(tree) {
+	// Annotate the parse to indicate that it is a get
+	tree.readsFrom = tree.readsFrom || [];
+	tree.readsFrom.push(this);
+
+	// Search for the variable in this context
 	var x = this.search(tree.name);
 	if (!x) {
 		tree.undefined = true;
@@ -192,6 +197,11 @@ function getEnclosingFunction(tree) {
 }
 
 VariableContext.prototype.assign = function assign(parse, value, mayIgnore/*??*/) {
+	// Annotate the parse to indicate that it is a put
+	parse.writesTo = parse.writesTo || [];
+	parse.writesTo.push(this);
+
+	// Search for the variable in this context
 	var x = this.search(parse.name);
 	if (x) {
 		x.assign(value, parse, mayIgnore);
