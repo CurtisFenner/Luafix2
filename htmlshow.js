@@ -117,9 +117,12 @@
 		// scope0: 197, 200, 176
 		// scope20: 67, 52, 8
 		let progress = Math.min((depth - 3) / 12, 1);
-		let r = lerp(255, lerp(197, 67, progress), 0.75) | 0;
-		let g = lerp(255, lerp(200, 52, progress), 0.75) | 0;
-		let b = lerp(255, lerp(176, 8, progress), 0.75) | 0;
+		let r = lerp(255, lerp(197, 67, progress), 0.75);
+		let g = lerp(255, lerp(200, 52, progress), 0.75);
+		let b = lerp(255, lerp(176, 8, progress), 0.75);
+		r = lerp(r, 255, 0.5) | 0;
+		g = lerp(g, 255, 0.5) | 0;
+		b = lerp(b, 255, 0.5) | 0;
 
 		// Display the content in the computed color
 		let style = "background: rgb(" + r + ", " + g + ", " + b + ");";
