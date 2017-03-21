@@ -25,12 +25,13 @@ Variable.prototype.assign = function assign(value, assignment, mayIgnore) {
 	this.check();
 	this.value = value;
 	this.assignments = [assignment];
-	if (!assignment) {
-		throw "no assignment given to assign";
+	if (!assignment || assignment.type !== "Identifier") {
+		throw new Error("no assignment given to assign");
 	}
 	assignment.reads = assignment.reads || [];
 	assignment.mayIgnore = mayIgnore; // TODO check this
 	assignment.definition = this.definition;
+	assignment.variableSource = this;
 };
 Variable.prototype.copy = function copyVariable() {
 	var v = new Variable(this.name);
@@ -46,11 +47,12 @@ Variable.prototype.check = function check() {
 };
 Variable.prototype.read = function read(source) {
 	if (!source) {
-		throw "Cannot read without source";
+		throw new Error("Cannot read without source");
 	}
 	if (this.value === "uninitialized") {
-		throw "Variable in invalid state. value was not initialized";
+		throw new Error("Variable in invalid state. value was not initialized");
 	}
+	source.variableSource = this;
 	for (var i = 0; i < this.assignments.length; i++) {
 		this.assignments[i].reads.push(source);
 	}
@@ -380,16 +382,6 @@ function variableStage(parse, options) {
 	lphelp.recurse(parse, variableProcess);
 	lphelp.recurse(parse, variableCheck, null, null, context);
 }
-
-var OPENER = [
-	"IfStatement",
-	"DoStatement",
-	"RepeatStatement",
-	"WhileStatement",
-	"FunctionDeclaration",
-	"ForNumericStatement",
-	"ForGenericStatement",
-];
 
 function variablePass(parse, context) {
 	if (!context || !context.variables) {
