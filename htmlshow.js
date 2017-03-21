@@ -5,6 +5,31 @@
 		this.showProblems = showProblems;
 	}
 
+	let OPENS_SCOPE = {
+		"IfClause": true,
+		"ElseifClause": true,
+		"ElseClause": true,
+
+		"DoStatement": true,
+		"RepeatStatement": true,
+		"WhileStatement": true,
+		"FunctionDeclaration": true,
+		"ForNumericStatement": true,
+		"ForGenericStatement": true,
+
+		"Chunk": true,
+	};
+
+	let getParseScopeDepth = function(parse) {
+		if (!parse.parent) {
+			return 0;
+		}
+		if (OPENS_SCOPE[parse.type]) {
+			return 1 + getParseScopeDepth(parse.parent);
+		}
+		return getParseScopeDepth(parse.parent);
+	}
+
 	let precedenceTable = [
 		[".", ":"], false,
 		["()"], false,
@@ -76,11 +101,38 @@
 
 	let end = "<div class=line>" + span.keyword("end") + "</div>\n";
 
+	HTMLShower.prototype.scopeBlock = function(depth, content, inline) {
+		let element = inline ? "span" : "div";
+
+		if (typeof depth !== "number") {
+			depth = getParseScopeDepth(depth);
+		}
+
+		if (inline && content.trim() === "") {
+			return "<span class=scope" + depth + "></span>";
+		}
+
+		// Compute a color corresponding to scope depth
+		let lerp = (a, b, t) => a + (b - a) * t;
+		// scope0: 197, 200, 176
+		// scope20: 67, 52, 8
+		let progress = Math.min((depth - 3) / 12, 1);
+		let r = lerp(255, lerp(197, 67, progress), 0.75) | 0;
+		let g = lerp(255, lerp(200, 52, progress), 0.75) | 0;
+		let b = lerp(255, lerp(176, 8, progress), 0.75) | 0;
+
+		// Display the content in the computed color
+		let style = "background: rgb(" + r + ", " + g + ", " + b + ");";
+		if (inline) {
+			style += "padding: 0.45em;";
+		}
+		return "<" + element + " class='scope" + depth + "' style='" + style + "'>" + content + "</" + element + ">";
+	};
 
 	HTMLShower.prototype.showStatements = function(statements) {
 		let shownStatements = statements.map(x => this.show(x));
 		// TODO: insert semicolons as needed
-		return "<DIV class=scope>" + shownStatements.join("\n") + "</DIV>";
+		return "<DIV class='scope'>" + shownStatements.join("\n") + "</DIV>";
 	};
 
 	// Shows a (comma separate) tuple of expressions
@@ -109,9 +161,10 @@
 				" " + this.show(clause.condition, "") +
 				" " + span.keyword("then") + "</div>";
 		} else {
+			// ElseClause
 			var open = "<div class=line>" + span.keyword("else") + "</div>";
 		}
-		return open + this.showStatements(clause.body);
+		return open + this.scopeBlock(clause, this.showStatements(clause.body));
 	}
 
 	HTMLShower.prototype.show = function(parse, parent) {
@@ -146,7 +199,7 @@
 		};
 		// Compound statements
 		if (parse.type === "Chunk") {
-			return this.showStatements(parse.body);
+			return this.scopeBlock(parse, this.showStatements(parse.body));
 		} else if (parse.type === "FunctionDeclaration") {
 			let r = "";
 			if (parse.identifier) {
@@ -159,8 +212,8 @@
 			if (parse.identifier) {
 				r += " " + this.show(parse.identifier, "");
 			}
-			r += "(" + this.showExpressions(parse.parameters) + ")";
-			r += this.showStatements(parse.body);
+			r += "(" + this.scopeBlock(parse, this.showExpressions(parse.parameters), true) + ")";
+			r += this.scopeBlock(parse, this.showStatements(parse.body));
 			if (parse.identifier) {
 				r += end;
 			} else {
@@ -174,32 +227,37 @@
 				span.keyword("while") + " " +
 				this.show(parse.condition, "") + " " +
 				span.keyword("do") + "</div>";
-			r += this.showStatements(parse.body);
+			r += this.scopeBlock(parse, this.showStatements(parse.body));
 			r += end;
 			return r;
 		} else if (parse.type === "RepeatStatement") {
 			let r = "<div class=line>" + span.keyword("repeat") + "</div>";
-			r += this.showStatements(parse.body);
-			r += "<div class=line>" + span.keyword("until") + " " + this.show(parse.condition, "") + "</div>";
+			r += this.scopeBlock(parse, this.showStatements(parse.body));
+			r += "<div class=line>" + span.keyword("until") + " " + this.scopeBlock(parse, this.show(parse.condition, ""), true) + "</div>";
 			return r;
 		} else if (parse.type === "ForGenericStatement") {
 			let r = "<div class=line>" + span.keyword("for") +
-				" " + this.showExpressions(parse.variables) +
+				" " + this.scopeBlock(parse, this.showExpressions(parse.variables), true) +
 				" " + span.keyword("in") +
 				" " + this.showExpressions(parse.iterators) +
 				" " + span.keyword("do") + "</div>";
-			r += this.showStatements(parse.body);
+			r += this.scopeBlock(parse, this.showStatements(parse.body));
+			r += end;
+			return r;
+		} else if (parse.type === "DoStatement") {
+			let r = "<div class='line'>" + span.keyword("do") + "</div>";
+			r += this.scopeBlock(parse, this.showStatements(parse.body));
 			r += end;
 			return r;
 		} else if (parse.type === "ForNumericStatement") {
 			let r = "<div class=line>" +
-				span.keyword("for") + " " + parse.variable.name + " = ";
+				span.keyword("for") + this.scopeBlock(parse, " " + parse.variable.name + " ", true) + " = ";
 			r += this.show(parse.start, "") + ", " + this.show(parse.end, "");
 			if (parse.step) {
 				r += ", " + this.show(parse.step, "");
 			}
 			r += " " + span.keyword("do") + "</div>";
-			r += this.showStatements(parse.body);
+			r += this.scopeBlock(parse, this.showStatements(parse.body));
 			r += end
 			return r;
 		// Statements
@@ -249,7 +307,7 @@
 			);
 		} else if (parse.type === "IndexExpression") {
 			return this.show(parse.base, "()") + "[" + this.show(parse.index, "") + "]";
-		} else if (parse.type === "CallExpression") {
+		} else if (parse.type === "CallExpression" || parse.type === "StringCallExpression" || parse.type == "TableCallExpression") {
 			let pre = "";
 			let post = "";
 			if (parse.inParens) {
@@ -257,8 +315,16 @@
 				pre = "(";
 				post = ")";
 			}
-			return pre + this.show(parse.base, "()") +
-				"(" + this.showExpressions(parse.arguments) + ")" + post;
+
+			let args;
+			if (parse.type === "CallExpression") {
+				args = "(" + this.showExpressions(parse.arguments) + ")";
+			} else if (parse.type == "StringCallExpression") {
+				args = " " + this.show(parse.argument, ""); // XXX
+			} else {
+				args = " " + this.show(parse.arguments, ""); // XXX
+			}
+			return pre + this.show(parse.base, "()") + args + post;
 		} else if (parse.type === "BinaryExpression") {
 			let op = parse.operator;
 			return parened(op)(
@@ -302,7 +368,18 @@
 		} else if (parse.type === "NilLiteral") {
 			return span.literalKeyword(parse.raw);
 		} else if (parse.type === "Identifier") {
-			return parse.name;
+			let source = parse.variableSource && parse.variableSource.definition;
+
+			if (source) {
+				// local variable defined at source
+				return this.scopeBlock(source, parse.name, true);
+			} else if (parse.definition) {
+				// assignment to a new local? variable
+				return parse.name;
+			} else {
+				// global (or undefined) variable
+				return this.scopeBlock(0, parse.name, true);
+			}
 		}
 		console.log("unknown parse type `" + parse.type + "`");
 		console.log(parse);
