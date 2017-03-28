@@ -279,7 +279,7 @@
 			r += "</div>";
 			return r;
 		} else if (parse.type === "LocalStatement") {
-			let names = parse.variables.map(x => x.name);
+			let names = parse.variables.map(x => this.show(x));
 			let r = "<div class=line>" + span.keyword("local") +
 				" " + names.join(", ");
 			if (parse.init.length > 0) {

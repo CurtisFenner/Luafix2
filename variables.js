@@ -345,8 +345,7 @@ function variableCheck(parse, context) {
 		for (var i = 0; i < parse.variables.length; i++) {
 			variableCheck(parse.variables[i]);
 		}
-	}
-	if (parse.type === 'FunctionDeclaration') {
+	} else if (parse.type === 'FunctionDeclaration') {
 		for (var i = 0; i < parse.parameters.length; i++) {
 			variableCheck(parse.parameters[i]);
 		}
@@ -354,6 +353,7 @@ function variableCheck(parse, context) {
 			variableCheck(parse.identifier);
 		}
 	}
+
 	if (parse.undefined) {
 		if (!context.variables.globals[parse.name] || statementContext(parse).type === "Chunk") {
 			parse.error("The variable <code>" + parse.name + "</code> is not defined", "This name hasn't been defined. Have you made a typo?");
